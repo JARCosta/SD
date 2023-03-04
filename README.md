@@ -16,7 +16,7 @@ code dependency management, to ensure your code runs using the correct component
 
 | Number | Name              | User                             | Email                               |
 |--------|-------------------|----------------------------------|-------------------------------------|
-| 11111  | Alice Distributed | <https://github.com/AliceUser>   | <mailto:alice@tecnico.ulisboa.pt>   |
+| 100598 | José Maria Gomes  | <https://github.com/zemariavg>   | <mailto:jose.vilar.gomes@tecnico.ulisboa.pt>|
 | 99088  | João Costa        | <https://github.com/JARCosta>    | <mailto:joaoarcosta@tecnico.ulisboa.pt>     |
 | 33333  | Charlie Rules     | <https://github.com/CharlieUser> | <mailto:charlie@tecnico.ulisboa.pt> |
 
