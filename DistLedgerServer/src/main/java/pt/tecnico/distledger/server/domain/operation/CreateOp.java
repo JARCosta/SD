@@ -6,4 +6,8 @@ public class CreateOp extends Operation {
         super(account);
     }
 
+    @Override
+    public String toString() {
+        return "CreateOp {account: " + super.getAccount() + "}\n";
+    }
 }

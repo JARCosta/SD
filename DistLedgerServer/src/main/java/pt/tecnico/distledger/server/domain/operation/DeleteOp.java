@@ -6,4 +6,8 @@ public class DeleteOp extends Operation {
         super(account);
     }
 
+    @Override
+    public String toString() {
+        return "DeleteOp {account: " + super.getAccount() + "}\n";
+    }
 }

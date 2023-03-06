@@ -26,4 +26,9 @@ public class TransferOp extends Operation {
         this.amount = amount;
     }
 
+    @Override
+    public String toString() {
+        return "TransferOp {from: " + super.getAccount() + ", to: " + destAccount + ", amount: " + amount + "}\n";
+    }
+
 }
