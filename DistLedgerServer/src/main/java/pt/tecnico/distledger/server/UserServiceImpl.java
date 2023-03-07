@@ -10,13 +10,12 @@ public class UserServiceImpl extends UserServiceImplBase{
     @Override
     public void balance(BalanceRequest request, StreamObserver<BalanceResponse> responseObserver) {
         
-        BalanceResponse result = ledger.getBalance(request.getUserId());
 
         if(!ledger.accountExists(request.getUserId())){
             responseObserver.onError(new Exception("Error"));
         } else {
-            BalanceResponse response = BalanceResponse.newBuilder().build();
-            // BalanceResponse response = BalanceResponse.newBuilder().setValue(ledger.getBalance(request.getUserId())).build();
+
+            BalanceResponse response = BalanceResponse.newBuilder().setValue(ledger.getBalance(request.getUserId())).build();
             
             System.out.println("BalanceRequest received " + request.getUserId() + "!" + response.getValue() + "!");
             // Send a single response through the stream.
@@ -29,9 +28,10 @@ public class UserServiceImpl extends UserServiceImplBase{
     @Override
     public void createAccount(CreateAccountRequest request, StreamObserver<CreateAccountResponse> responseObserver) {
         
-        if(ledger.accountExists(request.getUserId())){
+        if(ledger.createAccount(request.getUserId()) != 0){
             responseObserver.onError(new Exception("Error"));
         } else {
+
             CreateAccountResponse response = CreateAccountResponse.newBuilder().build();
             
             System.out.println("CreateAccountRequest received " + request.getUserId() + "!");
@@ -46,7 +46,8 @@ public class UserServiceImpl extends UserServiceImplBase{
 
     @Override
     public void deleteAccount(DeleteAccountRequest request, StreamObserver<DeleteAccountResponse> responseObserver) {
-        if(!ledger.accountExists(request.getUserId())){
+
+        if(ledger.deleteAccount(request.getUserId()) != 0){
             responseObserver.onError(new Exception("Error"));
         } else {
             DeleteAccountResponse response = DeleteAccountResponse.newBuilder().build();
@@ -62,7 +63,7 @@ public class UserServiceImpl extends UserServiceImplBase{
 
     @Override
     public void transferTo(TransferToRequest request, StreamObserver<TransferToResponse> responseObserver) {
-        if(!(ledger.accountExists(request.getAccountFrom()) && ledger.accountExists(request.getAccountTo())))){
+        if(ledger.transferTo(request.getAccountFrom(), request.getAccountTo(), request.getAmount()) != 0){
             responseObserver.onError(new Exception("Error"));
         } else {
             TransferToResponse response = TransferToResponse.newBuilder().build();
