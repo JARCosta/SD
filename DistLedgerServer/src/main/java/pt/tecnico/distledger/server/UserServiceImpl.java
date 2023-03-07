@@ -5,6 +5,8 @@ import pt.tecnico.distledger.server.domain.ServerState;
 import pt.ulisboa.tecnico.distledger.contract.user.UserDistLedger.*;
 import pt.ulisboa.tecnico.distledger.contract.user.UserServiceGrpc.UserServiceImplBase;
 
+import static io.grpc.Status.*;
+
 public class UserServiceImpl extends UserServiceImplBase{
     private ServerState ledger = new ServerState();
     @Override
@@ -30,7 +32,7 @@ public class UserServiceImpl extends UserServiceImplBase{
     public void createAccount(CreateAccountRequest request, StreamObserver<CreateAccountResponse> responseObserver) {
         
         if(ledger.createAccount(request.getUserId()) != 0){
-            responseObserver.onError(new Exception("Error"));
+            responseObserver.onError(new Exception(ALREADY_EXISTS.withDescription("User already exists").asRuntimeException()));
         } else {
 
             CreateAccountResponse response = CreateAccountResponse.newBuilder().build();

@@ -6,6 +6,8 @@ import pt.ulisboa.tecnico.distledger.contract.user.UserDistLedger.*;
 
 import java.util.Scanner;
 
+import io.grpc.StatusRuntimeException;
+
 public class CommandParser {
 
     private static final String SPACE = " ";
@@ -94,9 +96,13 @@ public class CommandParser {
         }
         String server = split[1];
         String username = split[2];
-
-        DeleteAccountResponse result =  stub.deleteAccount(DeleteAccountRequest.newBuilder().setUserId(username).build());
-        System.out.println(result == null ? "null" : "OK");
+        try{
+            DeleteAccountResponse result =  stub.deleteAccount(DeleteAccountRequest.newBuilder().setUserId(username).build());
+            System.out.println(result == null ? "null" : "OK");
+        }
+        catch (StatusRuntimeException e){
+            System.out.println(e.getStatus().getDescription());
+        }
         // System.out.println("TODO: implement deleteAccount command");
     }
 
