@@ -17,7 +17,8 @@ public class UserServiceImpl extends UserServiceImplBase{
 
             BalanceResponse response = BalanceResponse.newBuilder().setValue(ledger.getBalance(request.getUserId())).build();
             
-            System.out.println("BalanceRequest received " + request.getUserId() + "!" + response.getValue() + "!");
+            // System.out.println("BalanceRequest received " + request.getUserId() + "!" + response.getValue() + "!");
+
             // Send a single response through the stream.
             responseObserver.onNext(response);
             // Notify the client that the operation has been completed.
@@ -34,9 +35,9 @@ public class UserServiceImpl extends UserServiceImplBase{
 
             CreateAccountResponse response = CreateAccountResponse.newBuilder().build();
             
-            System.out.println("CreateAccountRequest received " + request.getUserId() + "!");
-            // Send a single response through the stream.
+            // System.out.println("CreateAccountRequest received " + request.getUserId() + "!");
             
+            // Send a single response through the stream.
             responseObserver.onNext(response);
             // Notify the client that the operation has been completed.
             responseObserver.onCompleted();
@@ -52,7 +53,8 @@ public class UserServiceImpl extends UserServiceImplBase{
         } else {
             DeleteAccountResponse response = DeleteAccountResponse.newBuilder().build();
             
-            System.out.println("DeleteAccountRequest received " + request.getUserId() + "!");
+            // System.out.println("DeleteAccountRequest received " + request.getUserId() + "!");
+
             // Send a single response through the stream.
             ledger.deleteAccount(request.getUserId());
             responseObserver.onNext(response);
@@ -68,7 +70,8 @@ public class UserServiceImpl extends UserServiceImplBase{
         } else {
             TransferToResponse response = TransferToResponse.newBuilder().build();
     
-            System.out.println("TransferToRequest received from" + request.getAccountFrom() + "to" + request.getAccountTo() + " for" + request.getAmount() + "!");
+            // System.out.println("TransferToRequest received from" + request.getAccountFrom() + "to" + request.getAccountTo() + " for" + request.getAmount() + "!");
+            
             // Send a single response through the stream.
             ledger.transferTo(request.getAccountFrom(), request.getAccountTo(), request.getAmount());
             responseObserver.onNext(response);

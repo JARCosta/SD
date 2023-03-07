@@ -80,7 +80,8 @@ public class CommandParser {
         String username = split[2];
 
         // Integer result = 
-        stub.createAccount(CreateAccountRequest.newBuilder().setUserId(username).build());
+        CreateAccountResponse result = stub.createAccount(CreateAccountRequest.newBuilder().setUserId(username).build());
+        System.out.println(result == null ? "null" : "OK");
         // System.out.println("TODO: implement createAccount command");
     }
 
@@ -94,7 +95,8 @@ public class CommandParser {
         String server = split[1];
         String username = split[2];
 
-        stub.deleteAccount(DeleteAccountRequest.newBuilder().setUserId(username).build());
+        DeleteAccountResponse result =  stub.deleteAccount(DeleteAccountRequest.newBuilder().setUserId(username).build());
+        System.out.println(result == null ? "null" : "OK");
         // System.out.println("TODO: implement deleteAccount command");
     }
 
@@ -109,7 +111,9 @@ public class CommandParser {
         String server = split[1];
         String username = split[2];
 
-        stub.balance(BalanceRequest.newBuilder().setUserId(username).build());
+        BalanceResponse result = stub.balance(BalanceRequest.newBuilder().setUserId(username).build());
+        System.out.println(result == null ? "null" : "OK");
+        System.out.println(result.getValue());
         // System.out.println("TODO: implement balance command");
     }
 
@@ -125,7 +129,8 @@ public class CommandParser {
         String dest = split[3];
         Integer amount = Integer.valueOf(split[4]);
 
-        stub.transferTo(TransferToRequest.newBuilder().setAccountFrom(from).setAccountTo(dest).setAmount(amount).build());
+        TransferToResponse result = stub.transferTo(TransferToRequest.newBuilder().setAccountFrom(from).setAccountTo(dest).setAmount(amount).build());
+        System.out.println(result == null ? "null" : "OK");
         // System.out.println("TODO: implement transferTo command");
     }
 

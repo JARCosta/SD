@@ -30,6 +30,7 @@ public class ServerState {
     }
 
     public Integer createAccount(String userId) {
+        if(accountExists(userId)) return -1;
         ledger.add(new CreateOp(userId));
         accounts.put(userId, 0);
         return 0;
