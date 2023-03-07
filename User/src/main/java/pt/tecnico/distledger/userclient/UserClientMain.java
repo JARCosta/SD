@@ -27,22 +27,11 @@ public class UserClientMain {
         final String host = args[0];
         final int port = Integer.parseInt(args[1]);
 
-        final String target = host + ":" + port;
-
-		// Channel is the abstraction to connect to a service endpoint.
-		// Let us use plaintext communication because we do not have certificates.
-		final ManagedChannel channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
-
-		// It is up to the client to determine whether to block the call.
-		// Here we create a blocking stub, but an async stub,
-		// or an async stub with Future are always possible.
-        UserServiceGrpc.UserServiceBlockingStub stub = UserServiceGrpc.newBlockingStub(channel);
-        // tttgrpc -> userservicegrpc.userserviceblockingstub
 
         
 
-        CommandParser parser = new CommandParser(new UserService());
-        parser.parseInput(stub);
+        CommandParser parser = new CommandParser(new UserService(host, port));
+        parser.parseInput();
         
 		// A Channel should be shutdown before stopping the process.
 		channel.shutdownNow();

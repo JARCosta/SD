@@ -24,7 +24,7 @@ public class CommandParser {
         this.userService = userService;
     }
 
-    void parseInput(UserServiceGrpc.UserServiceBlockingStub stub) {
+    void parseInput() {
 
         Scanner scanner = new Scanner(System.in);
         boolean exit = false;
@@ -37,19 +37,19 @@ public class CommandParser {
             try{
                 switch (cmd) {
                     case CREATE_ACCOUNT:
-                        this.createAccount(line, stub);
+                        this.createAccount(line);
                         break;
 
                     case DELETE_ACCOUNT:
-                        this.deleteAccount(line, stub);
+                        this.deleteAccount(line);
                         break;
 
                     case TRANSFER_TO:
-                        this.transferTo(line, stub);
+                        this.transferTo(line);
                         break;
 
                     case BALANCE:
-                        this.balance(line, stub);
+                        this.balance(line);
                         break;
 
                     case HELP:
@@ -70,7 +70,7 @@ public class CommandParser {
         }
     }
 
-    private void createAccount(String line, UserServiceGrpc.UserServiceBlockingStub stub){
+    private void createAccount(String line){
         String[] split = line.split(SPACE);
 
         if (split.length != 3){
@@ -81,33 +81,10 @@ public class CommandParser {
         String server = split[1];
         String username = split[2];
 
-        // Integer result = 
-        CreateAccountResponse result = stub.createAccount(CreateAccountRequest.newBuilder().setUserId(username).build());
-        System.out.println(result == null ? "null" : "OK");
-        // System.out.println("TODO: implement createAccount command");
+        userService.createAccount(username);
     }
 
-    private void deleteAccount(String line, UserServiceGrpc.UserServiceBlockingStub stub){
-        String[] split = line.split(SPACE);
-
-        if (split.length != 3){
-            this.printUsage();
-            return;
-        }
-        String server = split[1];
-        String username = split[2];
-        try{
-            DeleteAccountResponse result =  stub.deleteAccount(DeleteAccountRequest.newBuilder().setUserId(username).build());
-            System.out.println(result == null ? "null" : "OK");
-        }
-        catch (StatusRuntimeException e){
-            System.out.println(e.getStatus().getDescription());
-        }
-        // System.out.println("TODO: implement deleteAccount command");
-    }
-
-
-    private void balance(String line, UserServiceGrpc.UserServiceBlockingStub stub){
+    private void deleteAccount(String line){
         String[] split = line.split(SPACE);
 
         if (split.length != 3){
@@ -117,13 +94,24 @@ public class CommandParser {
         String server = split[1];
         String username = split[2];
 
-        BalanceResponse result = stub.balance(BalanceRequest.newBuilder().setUserId(username).build());
-        System.out.println(result == null ? "null" : "OK");
-        System.out.println(result.getValue());
-        // System.out.println("TODO: implement balance command");
+        userService.deleteAccount(username);
     }
 
-    private void transferTo(String line, UserServiceGrpc.UserServiceBlockingStub stub){
+
+    private void balance(String line){
+        String[] split = line.split(SPACE);
+
+        if (split.length != 3){
+            this.printUsage();
+            return;
+        }
+        String server = split[1];
+        String username = split[2];
+
+        userService.balance(username);
+    }
+
+    private void transferTo(String line){
         String[] split = line.split(SPACE);
 
         if (split.length != 5){
@@ -135,9 +123,7 @@ public class CommandParser {
         String dest = split[3];
         Integer amount = Integer.valueOf(split[4]);
 
-        TransferToResponse result = stub.transferTo(TransferToRequest.newBuilder().setAccountFrom(from).setAccountTo(dest).setAmount(amount).build());
-        System.out.println(result == null ? "null" : "OK");
-        // System.out.println("TODO: implement transferTo command");
+        userService.transferTo(from, dest, amount);
     }
 
     private void printUsage() {
