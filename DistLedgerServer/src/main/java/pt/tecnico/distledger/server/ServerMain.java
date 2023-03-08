@@ -6,14 +6,13 @@ import java.io.IOException;
 import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import pt.tecnico.distledger.server.domain.AdminServiceImpl;
 import pt.tecnico.distledger.server.domain.ServerState;
 import pt.tecnico.distledger.server.domain.UserServiceImpl;
 
 public class ServerMain {
 
     public static void main(String[] args) throws IOException, InterruptedException{
-
-        /* TODO */
 
         System.out.printf("Received %d arguments%n", args.length);
 		for (int i = 0; i < args.length; i++) {
@@ -24,9 +23,10 @@ public class ServerMain {
 
 		final int port = Integer.parseInt(args[0]);
 		final BindableService userService = new UserServiceImpl(ledger);
+		final BindableService adminService = new AdminServiceImpl(ledger);
 
         // Create a new server to listen on port
-        Server server = ServerBuilder.forPort(port).addService(userService).build();
+        Server server = ServerBuilder.forPort(port).addService(userService).addService(adminService).build();
 
 		// Start the server
 		server.start();
@@ -37,6 +37,5 @@ public class ServerMain {
 		// Do not exit the main thread. Wait until server is terminated.
 		server.awaitTermination();
     }
-
 }
 

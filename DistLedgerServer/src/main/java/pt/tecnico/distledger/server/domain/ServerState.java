@@ -21,8 +21,9 @@ public class ServerState {
         accounts.put("broker", 1000);
     }
 
-    /* TODO: Here should be declared all the server state attributes
-         as well as the methods to access and interact with the state. */
+    public List<Operation> getOperations() {
+        return ledger;
+    }
 
     public Integer getBalance(String userId) {
         // if(!accountExists(userId)) return -1;

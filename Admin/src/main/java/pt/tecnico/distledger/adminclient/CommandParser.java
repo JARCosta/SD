@@ -69,7 +69,6 @@ public class CommandParser {
         }
         String server = split[1];
         adminService.activate();
-        System.out.println("TODO: implement activate command");
     }
 
     private void deactivate(String line){
@@ -81,7 +80,6 @@ public class CommandParser {
         }
         String server = split[1];
         adminService.deactivate();
-        System.out.println("TODO: implement deactivate command");
     }
 
     private void dump(String line){
@@ -93,7 +91,6 @@ public class CommandParser {
         }
         String server = split[1];
         adminService.getLedgerState();
-        System.out.println("TODO: implement getLedgerState command");
     }
 
     @SuppressWarnings("unused")
