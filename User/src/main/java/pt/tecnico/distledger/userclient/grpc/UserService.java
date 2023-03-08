@@ -8,7 +8,7 @@ import pt.ulisboa.tecnico.distledger.contract.user.UserDistLedger.*;
 
 public class UserService {
 
-    /*TODO: The gRPC client-side logic should be here.
+    /* TODO: The gRPC client-side logic should be here.
         This should include a method that builds a channel and stub,
         as well as individual methods for each remote operation of this service. */
     private UserServiceGrpc.UserServiceBlockingStub stub;
@@ -53,15 +53,25 @@ public class UserService {
 
 
     public void balance(String username) {
-        BalanceResponse result = stub.balance(BalanceRequest.newBuilder().setUserId(username).build());
-        System.out.println(result == null ? "null" : "OK");
-        System.out.println(result.getValue());
+        try{
+            BalanceResponse result = stub.balance(BalanceRequest.newBuilder().setUserId(username).build());
+            System.out.println(result == null ? "null" : "OK");
+            System.out.println(result.getValue());
+        }
+        catch (StatusRuntimeException e){
+            System.out.println(e.getStatus().getDescription());
+        }
     }
 
 
     public void transferTo(String from, String dest, int amount) {
-        TransferToResponse result = stub.transferTo(TransferToRequest.newBuilder().setAccountFrom(from).setAccountTo(dest).setAmount(amount).build());
-        System.out.println(result == null ? "null" : "OK");
+        try{
+            TransferToResponse result = stub.transferTo(TransferToRequest.newBuilder().setAccountFrom(from).setAccountTo(dest).setAmount(amount).build());
+            System.out.println(result == null ? "null" : "OK");
+        }
+        catch (StatusRuntimeException e){
+            System.out.println(e.getStatus().getDescription());
+        }
     }
 
 }

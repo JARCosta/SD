@@ -41,7 +41,7 @@ public class ServerState {
     }
 
     public Integer deleteAccount(String userId) {
-        if(getBalance(userId) != 0) return -1;
+        if(!accountExists(userId)) return -1;
         ledger.add(new DeleteOp(userId));
         accounts.remove(userId);
         return 0;

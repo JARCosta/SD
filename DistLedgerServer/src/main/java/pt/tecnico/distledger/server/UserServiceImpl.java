@@ -9,12 +9,13 @@ import static io.grpc.Status.*;
 
 public class UserServiceImpl extends UserServiceImplBase{
     private ServerState ledger = new ServerState();
+
     @Override
     public void balance(BalanceRequest request, StreamObserver<BalanceResponse> responseObserver) {
         
 
         if(!ledger.accountExists(request.getUserId())){
-            responseObserver.onError(new Exception("Error"));
+            responseObserver.onError(new Exception(NOT_FOUND.withDescription("User not found").asRuntimeException()));
         } else {
 
             BalanceResponse response = BalanceResponse.newBuilder().setValue(ledger.getBalance(request.getUserId())).build();
@@ -51,14 +52,13 @@ public class UserServiceImpl extends UserServiceImplBase{
     public void deleteAccount(DeleteAccountRequest request, StreamObserver<DeleteAccountResponse> responseObserver) {
 
         if(ledger.deleteAccount(request.getUserId()) != 0){
-            responseObserver.onError(new Exception("Error"));
+            responseObserver.onError(new Exception(NOT_FOUND.withDescription("User not found").asRuntimeException()));
         } else {
             DeleteAccountResponse response = DeleteAccountResponse.newBuilder().build();
             
             // System.out.println("DeleteAccountRequest received " + request.getUserId() + "!");
 
             // Send a single response through the stream.
-            ledger.deleteAccount(request.getUserId());
             responseObserver.onNext(response);
             // Notify the client that the operation has been completed.
             responseObserver.onCompleted();
@@ -68,7 +68,7 @@ public class UserServiceImpl extends UserServiceImplBase{
     @Override
     public void transferTo(TransferToRequest request, StreamObserver<TransferToResponse> responseObserver) {
         if(ledger.transferTo(request.getAccountFrom(), request.getAccountTo(), request.getAmount()) != 0){
-            responseObserver.onError(new Exception("Error"));
+            responseObserver.onError(new Exception(NOT_FOUND.withDescription("User not found").asRuntimeException()));
         } else {
             TransferToResponse response = TransferToResponse.newBuilder().build();
     

@@ -34,7 +34,7 @@ public class UserClientMain {
         parser.parseInput();
         
 		// A Channel should be shutdown before stopping the process.
-		channel.shutdownNow();
+		// channel.shutdownNow();
 
     }
 }
