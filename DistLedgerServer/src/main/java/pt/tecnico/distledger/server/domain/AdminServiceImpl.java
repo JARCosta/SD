@@ -1,9 +1,7 @@
-package pt.tecnico.distledger.server;
+package pt.tecnico.distledger.server.domain;
 
 import io.grpc.stub.StreamObserver;
-import pt.tecnico.distledger.server.domain.ServerState;
 import pt.ulisboa.tecnico.distledger.contract.admin.AdminServiceGrpc.AdminServiceImplBase;
-import pt.ulisboa.tecnico.distledger.contract.user.UserDistLedger.*;
 import pt.ulisboa.tecnico.distledger.contract.admin.AdminDistLedger.*;
 
 import static io.grpc.Status.*;

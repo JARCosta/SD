@@ -6,8 +6,8 @@ import java.io.IOException;
 import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
-// import pt.tecnico.distledger.userclient.grpc.UserService;
 import pt.tecnico.distledger.server.domain.ServerState;
+import pt.tecnico.distledger.server.domain.UserServiceImpl;
 
 public class ServerMain {
 	ServerState ledger = new ServerState();
