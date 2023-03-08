@@ -42,6 +42,7 @@ public class ServerState {
 
     public Integer deleteAccount(String userId) {
         if(!accountExists(userId)) return -1;
+        else if(getBalance(userId) != 0) return -2;
         ledger.add(new DeleteOp(userId));
         accounts.remove(userId);
         return 0;
@@ -49,6 +50,9 @@ public class ServerState {
 
     public Integer transferTo(String from, String dest, Integer amount) {
         if(!(accountExists(from) && accountExists(dest))) return -1;
+        else if(from.equals(dest)) return -2;
+        else if(amount < 0) return -3;
+        else if(getBalance(from) < amount) return -4;
         ledger.add(new TransferOp(from, dest, amount));
         accounts.put(from, accounts.get(from) - amount);
         accounts.put(dest, accounts.get(dest) + amount);

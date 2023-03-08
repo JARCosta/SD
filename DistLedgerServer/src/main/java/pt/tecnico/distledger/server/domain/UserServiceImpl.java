@@ -42,25 +42,53 @@ public class UserServiceImpl extends UserServiceImplBase{
 
     @Override
     public void deleteAccount(DeleteAccountRequest request, StreamObserver<DeleteAccountResponse> responseObserver) {
-
-        if(ledger.deleteAccount(request.getUserId()) != 0){
-            responseObserver.onError(new Exception(NOT_FOUND.withDescription("User not found").asRuntimeException()));
-        } else {
-            DeleteAccountResponse response = DeleteAccountResponse.newBuilder().build();
-            responseObserver.onNext(response);
-            responseObserver.onCompleted();
+        int res = ledger.deleteAccount(request.getUserId());
+        switch (res) {
+            case 0:
+                DeleteAccountResponse response = DeleteAccountResponse.newBuilder().build();
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+                break;
+            case -1:
+                responseObserver.onError(new Exception(NOT_FOUND.withDescription("User not found").asRuntimeException()));
+                break;
+            case -2:
+                responseObserver.onError(new Exception(INVALID_ARGUMENT.withDescription("Balance must be 0").asRuntimeException()));
+                break;
+        
+            default:
+                responseObserver.onError(new Exception(UNKNOWN.withDescription("Failed to delete account").asRuntimeException()));
+                break;
         }
+        
     }
 
     @Override
     public void transferTo(TransferToRequest request, StreamObserver<TransferToResponse> responseObserver) {
-        
-        if(ledger.transferTo(request.getAccountFrom(), request.getAccountTo(), request.getAmount()) != 0){
-            responseObserver.onError(new Exception(NOT_FOUND.withDescription("User not found").asRuntimeException()));
-        } else {
-            TransferToResponse response = TransferToResponse.newBuilder().build();
-            responseObserver.onNext(response);
-            responseObserver.onCompleted();
+        int res = ledger.transferTo(request.getAccountFrom(), request.getAccountTo(), request.getAmount());
+
+        switch (res) {
+            case 0:
+                TransferToResponse response = TransferToResponse.newBuilder().build();
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+                break;
+            case -1:
+                responseObserver.onError(new Exception(NOT_FOUND.withDescription("User not found").asRuntimeException()));
+                break;
+            case -2:
+                responseObserver.onError(new Exception(INVALID_ARGUMENT.withDescription("Can't transfer to same account").asRuntimeException()));
+                break;
+            case -3:
+                responseObserver.onError(new Exception(INVALID_ARGUMENT.withDescription("Invalid amount").asRuntimeException()));
+                break;
+            case -4:
+                responseObserver.onError(new Exception(INVALID_ARGUMENT.withDescription("Not enough balance").asRuntimeException()));
+                break;
+
+            default:
+                responseObserver.onError(new Exception(UNKNOWN.withDescription("Transfer failed").asRuntimeException()));
+                break;
         }
     }
 
