@@ -7,8 +7,10 @@ import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 // import pt.tecnico.distledger.userclient.grpc.UserService;
+import pt.tecnico.distledger.server.domain.ServerState;
 
 public class ServerMain {
+	ServerState ledger = new ServerState();
 
     public static void main(String[] args) throws IOException, InterruptedException{
 
@@ -36,6 +38,10 @@ public class ServerMain {
 		// Do not exit the main thread. Wait until server is terminated.
 		server.awaitTermination();
     }
+
+	public ServerState getLedger() {
+		return ledger;
+	}
 
 }
 
