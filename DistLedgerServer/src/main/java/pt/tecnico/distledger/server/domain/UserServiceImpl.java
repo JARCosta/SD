@@ -1,5 +1,6 @@
 package pt.tecnico.distledger.server.domain;
 
+import io.grpc.Server;
 import io.grpc.stub.StreamObserver;
 import pt.ulisboa.tecnico.distledger.contract.user.UserDistLedger.*;
 import pt.ulisboa.tecnico.distledger.contract.user.UserServiceGrpc.UserServiceImplBase;
@@ -7,7 +8,11 @@ import pt.ulisboa.tecnico.distledger.contract.user.UserServiceGrpc.UserServiceIm
 import static io.grpc.Status.*;
 
 public class UserServiceImpl extends UserServiceImplBase{
-    private ServerState ledger = new ServerState();
+    private ServerState ledger;
+
+    public UserServiceImpl(ServerState serverState) {
+        this.ledger = serverState;
+    }
 
     @Override
     public void balance(BalanceRequest request, StreamObserver<BalanceResponse> responseObserver) {

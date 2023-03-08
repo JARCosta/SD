@@ -10,7 +10,6 @@ import pt.tecnico.distledger.server.domain.ServerState;
 import pt.tecnico.distledger.server.domain.UserServiceImpl;
 
 public class ServerMain {
-	ServerState ledger = new ServerState();
 
     public static void main(String[] args) throws IOException, InterruptedException{
 
@@ -21,13 +20,13 @@ public class ServerMain {
 			System.out.printf("arg[%d] = %s%n", i, args[i]);
 		}
 
-
+		ServerState ledger = new ServerState();
 
 		final int port = Integer.parseInt(args[0]);
-		final BindableService impl = new UserServiceImpl();
+		final BindableService userService = new UserServiceImpl(ledger);
 
         // Create a new server to listen on port
-        Server server = ServerBuilder.forPort(port).addService(impl).build();
+        Server server = ServerBuilder.forPort(port).addService(userService).build();
 
 		// Start the server
 		server.start();
@@ -38,10 +37,6 @@ public class ServerMain {
 		// Do not exit the main thread. Wait until server is terminated.
 		server.awaitTermination();
     }
-
-	public ServerState getLedger() {
-		return ledger;
-	}
 
 }
 
