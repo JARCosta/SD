@@ -14,11 +14,11 @@ code dependency management, to ensure your code runs using the correct component
 
 ### Team Members
 
-| Number | Name              | User                             | Email                               |
-|--------|-------------------|----------------------------------|-------------------------------------|
-| 100598 | José Maria Gomes  | <https://github.com/zemariavg>   | <mailto:jose.vilar.gomes@tecnico.ulisboa.pt>|
-| 99088  | João Costa        | <https://github.com/JARCosta>    | <mailto:joaoarcosta@tecnico.ulisboa.pt>     |
-| 33333  | Charlie Rules     | <https://github.com/CharlieUser> | <mailto:charlie@tecnico.ulisboa.pt> |
+| Number | Name             | User                             | Email                                             |
+|--------|------------------|----------------------------------|---------------------------------------------------|
+| 100598 | José Maria Gomes | <https://github.com/zemariavg>   | <mailto:jose.vilar.gomes@tecnico.ulisboa.pt>      |
+| 99088  | João Costa       | <https://github.com/JARCosta>    | <mailto:joaoarcosta@tecnico.ulisboa.pt>           |
+| 96880  | João Bettencourt | <https://github.com/joaobettencourt> | <mailto:joao.pais.bettencourt@tecnico.ulisboa.pt> |
 
 ## Getting Started
 
