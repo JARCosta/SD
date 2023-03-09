@@ -10,6 +10,16 @@ import io.grpc.StatusRuntimeException;
 
 public class CommandParser {
 
+    /** Set flag to true to print debug messages.
+     * The flag can be set using the -Ddebug command line option. */
+    private static final boolean DEBUG_FLAG = (System.getProperty("debug") != null);
+
+    /** Helper method to print debug messages. */
+    private static void debug(String debugMessage) {
+        if (DEBUG_FLAG)
+            System.err.println(debugMessage);
+    }
+
     private static final String SPACE = " ";
     private static final String CREATE_ACCOUNT = "createAccount";
     private static final String DELETE_ACCOUNT = "deleteAccount";
@@ -81,7 +91,9 @@ public class CommandParser {
         String server = split[1];
         String username = split[2];
 
+        debug("Asking server '" + server + "' to create account with username '" + username + "'...");
         userService.createAccount(username);
+        debug("Server completed the create account operation.");
     }
 
     private void deleteAccount(String line){
@@ -94,7 +106,9 @@ public class CommandParser {
         String server = split[1];
         String username = split[2];
 
+        debug("Asking server '" + server + "' to delete account with username '" + username + "'...");
         userService.deleteAccount(username);
+        debug("Server completed the delete account operation.");
     }
 
 
@@ -108,7 +122,9 @@ public class CommandParser {
         String server = split[1];
         String username = split[2];
 
+        debug("Asking server '" + server + "' to see the balance of '" + username + "'...");
         userService.balance(username);
+        debug("Server completed the balance operation.");
     }
 
     private void transferTo(String line){
@@ -123,7 +139,9 @@ public class CommandParser {
         String dest = split[3];
         Integer amount = Integer.valueOf(split[4]);
 
+        debug("Asking server '" + server + "' to transfer " + amount + " from '" + from + "' to '" + dest + "...");
         userService.transferTo(from, dest, amount);
+        debug("Server completed the transfer to operation.");
     }
 
     private void printUsage() {
