@@ -16,17 +16,22 @@ public class UserServiceImpl extends UserServiceImplBase{
 
     @Override
     public void balance(BalanceRequest request, StreamObserver<BalanceResponse> responseObserver) {
-        if (ledger.getBalance(request.getUserId()) == -1){
-            responseObserver.onError(new Exception(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException()));
+        int res = ledger.getBalance(request.getUserId());
+        
+        switch (res) {
+            case -1:
+                responseObserver.onError(new Exception(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException()));
+                break;
+            case -2:
+                responseObserver.onError(new Exception(NOT_FOUND.withDescription("User not found").asRuntimeException()));
+                break;
+            default:
+                BalanceResponse response = BalanceResponse.newBuilder().setValue(ledger.getBalance(request.getUserId())).build();
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+                break;
         }
-        else if(!ledger.accountExists(request.getUserId())){
-            responseObserver.onError(new Exception(NOT_FOUND.withDescription("User not found").asRuntimeException()));
-
-        }else {
-            BalanceResponse response = BalanceResponse.newBuilder().setValue(ledger.getBalance(request.getUserId())).build();
-            responseObserver.onNext(response);
-            responseObserver.onCompleted();
-        }
+        
     }
     
     @Override

@@ -52,18 +52,41 @@ public class AdminServiceImpl extends AdminServiceImplBase{
     }
 
     @Override
-    public synchronized void activate(ActivateRequest request, StreamObserver<ActivateResponse> responseObserver) {
-        ledger.activate();
-        ActivateResponse response = ActivateResponse.newBuilder().build();
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
+    public void activate(ActivateRequest request, StreamObserver<ActivateResponse> responseObserver) {
+        int res = ledger.activate();
+        switch (res) {
+            case 0:
+                ActivateResponse response = ActivateResponse.newBuilder().build();
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+                break;
+            case -1:
+                responseObserver.onError(new Exception(CANCELLED.withDescription("Server already actived").asRuntimeException()));
+                break;
+        
+            default:
+                responseObserver.onError(new Exception(UNKNOWN.withDescription("Failed to activate").asRuntimeException()));
+                break;
+        }
+
     }
 
     @Override
-    public synchronized void deactivate(DeactivateRequest request, StreamObserver<DeactivateResponse> responseObserver) {
-        ledger.deactivate();
-        DeactivateResponse response = DeactivateResponse.newBuilder().build();
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
+    public void deactivate(DeactivateRequest request, StreamObserver<DeactivateResponse> responseObserver) {
+        int res = ledger.deactivate();
+        switch (res) {
+            case 0:
+                DeactivateResponse response = DeactivateResponse.newBuilder().build();
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+                break;
+            case -1:
+                responseObserver.onError(new Exception(CANCELLED.withDescription("Server already deactived").asRuntimeException()));
+                break;
+        
+            default:
+                responseObserver.onError(new Exception(UNKNOWN.withDescription("Failed to deactivate").asRuntimeException()));
+                break;
+        }
     }
 }

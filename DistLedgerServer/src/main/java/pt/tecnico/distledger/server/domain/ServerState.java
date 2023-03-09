@@ -24,22 +24,16 @@ public class ServerState {
     }
 
 
-    public void activate(){
-        System.out.println("" + isServerActive);
-        if(!isServerActive){
-            this.isServerActive = true;
-        }else{
-            System.out.println("Failed to activate");
-        }
+    public Integer activate(){
+        if(isServerActive) return -1;
+        this.isServerActive = true;
+        return 0;
     }
 
-    public void deactivate(){
-        System.out.println("" + isServerActive);
-        if(isServerActive){
-            this.isServerActive = false;
-        }else{
-            System.out.println("Failed to deactivate");
-        }
+    public Integer deactivate(){
+        if(!isServerActive) return -1;
+        this.isServerActive = false;
+        return 0;
     }
 
     public List<Operation> getOperations() {
@@ -48,7 +42,7 @@ public class ServerState {
 
     public Integer getBalance(String userId) {
         if(!isServerActive) return -1;
-        //else if(!accountExists(userId)) return -2;
+        else if(!accountExists(userId)) return -2;
         return accounts.get(userId);
     }
 
