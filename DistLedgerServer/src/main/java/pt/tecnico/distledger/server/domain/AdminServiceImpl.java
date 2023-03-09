@@ -55,6 +55,7 @@ public class AdminServiceImpl extends AdminServiceImplBase{
 
     @Override
     public void activate(ActivateRequest request, StreamObserver<ActivateResponse> responseObserver) {
+        ledger.activate();
         ActivateResponse response = ActivateResponse.newBuilder().build();
         responseObserver.onNext(response);
         responseObserver.onCompleted();
@@ -62,6 +63,7 @@ public class AdminServiceImpl extends AdminServiceImplBase{
 
     @Override
     public void deactivate(DeactivateRequest request, StreamObserver<DeactivateResponse> responseObserver) {
+        ledger.deactivate();
         DeactivateResponse response = DeactivateResponse.newBuilder().build();
         responseObserver.onNext(response);
         responseObserver.onCompleted();

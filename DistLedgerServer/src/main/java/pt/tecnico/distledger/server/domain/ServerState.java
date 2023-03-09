@@ -13,12 +13,33 @@ import java.util.Map;
 public class ServerState {
     private List<Operation> ledger = new ArrayList<>();
     private Map<String, Integer> accounts = new HashMap<>();
+    public boolean isServerActive;
 
     // Dictionary<String, Integer> accounts = new Hashtable<>();
 
     public ServerState() {
         this.ledger = new ArrayList<>();
         accounts.put("broker", 1000);
+        this.isServerActive = true;
+    }
+
+
+    public void activate(){
+        System.out.println("" + isServerActive);
+        if(!isServerActive){
+            this.isServerActive = true;
+        }else{
+            System.out.println("Failed to activate");
+        }
+    }
+
+    public void deactivate(){
+        System.out.println("" + isServerActive);
+        if(isServerActive){
+            this.isServerActive = false;
+        }else{
+            System.out.println("Failed to deactivate");
+        }
     }
 
     public List<Operation> getOperations() {
@@ -26,12 +47,14 @@ public class ServerState {
     }
 
     public Integer getBalance(String userId) {
-        // if(!accountExists(userId)) return -1;
+        if(!isServerActive) return -1;
+        //else if(!accountExists(userId)) return -2;
         return accounts.get(userId);
     }
 
     public Integer createAccount(String userId) {
-        if(accountExists(userId)) return -1;
+        if(!isServerActive) return -1;
+        else if(accountExists(userId)) return -2;
         ledger.add(new CreateOp(userId));
         accounts.put(userId, 0);
         return 0;
@@ -42,23 +65,26 @@ public class ServerState {
     }
 
     public Integer deleteAccount(String userId) {
-        if(!accountExists(userId)) return -1;
-        else if(getBalance(userId) != 0) return -2;
+        if(!isServerActive) return -1;
+        else if(!accountExists(userId)) return -2;
+        else if(getBalance(userId) != 0) return -3;
         ledger.add(new DeleteOp(userId));
         accounts.remove(userId);
         return 0;
     }
 
     public Integer transferTo(String from, String dest, Integer amount) {
-        if(!(accountExists(from) && accountExists(dest))) return -1;
-        else if(from.equals(dest)) return -2;
-        else if(amount < 0) return -3;
-        else if(getBalance(from) < amount) return -4;
+        if(!isServerActive) return -1;
+        else if(!(accountExists(from) && accountExists(dest))) return -2;
+        else if(from.equals(dest)) return -3;
+        else if(amount < 0) return -4;
+        else if(getBalance(from) < amount) return -5;
         ledger.add(new TransferOp(from, dest, amount));
         accounts.put(from, accounts.get(from) - amount);
         accounts.put(dest, accounts.get(dest) + amount);
         return 0;
     }
+
 
     @Override
     public String toString() {

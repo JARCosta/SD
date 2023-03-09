@@ -16,11 +16,13 @@ public class UserServiceImpl extends UserServiceImplBase{
 
     @Override
     public void balance(BalanceRequest request, StreamObserver<BalanceResponse> responseObserver) {
-
-        if(!ledger.accountExists(request.getUserId())){
+        if (ledger.getBalance(request.getUserId()) == -1){
+            responseObserver.onError(new Exception(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException()));
+        }
+        else if(!ledger.accountExists(request.getUserId())){
             responseObserver.onError(new Exception(NOT_FOUND.withDescription("User not found").asRuntimeException()));
-        } else {
 
+        }else {
             BalanceResponse response = BalanceResponse.newBuilder().setValue(ledger.getBalance(request.getUserId())).build();
             responseObserver.onNext(response);
             responseObserver.onCompleted();
@@ -29,14 +31,24 @@ public class UserServiceImpl extends UserServiceImplBase{
     
     @Override
     public void createAccount(CreateAccountRequest request, StreamObserver<CreateAccountResponse> responseObserver) {
-        
-        if(ledger.createAccount(request.getUserId()) != 0){
-            responseObserver.onError(new Exception(ALREADY_EXISTS.withDescription("User already exists").asRuntimeException()));
-        } else {
-            CreateAccountResponse response = CreateAccountResponse.newBuilder().build();
-            responseObserver.onNext(response);
-            responseObserver.onCompleted();
+        int res = ledger.createAccount(request.getUserId());
+        switch (res) {
+            case 0:
+                CreateAccountResponse response = CreateAccountResponse.newBuilder().build();
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+                break;
+            case -1:
+                responseObserver.onError(new Exception(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException()));
+                break;
+            case -2:
+                responseObserver.onError(new Exception(ALREADY_EXISTS.withDescription("User already exists").asRuntimeException()));
+                break;
+            default:
+                responseObserver.onError(new Exception(UNKNOWN.withDescription("Failed to create account").asRuntimeException()));
+                break;
         }
+        
 
     }
 
@@ -50,9 +62,11 @@ public class UserServiceImpl extends UserServiceImplBase{
                 responseObserver.onCompleted();
                 break;
             case -1:
+                responseObserver.onError(new Exception(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException()));
+            case -2:
                 responseObserver.onError(new Exception(NOT_FOUND.withDescription("User not found").asRuntimeException()));
                 break;
-            case -2:
+            case -3:
                 responseObserver.onError(new Exception(INVALID_ARGUMENT.withDescription("Balance must be 0").asRuntimeException()));
                 break;
         
@@ -74,15 +88,18 @@ public class UserServiceImpl extends UserServiceImplBase{
                 responseObserver.onCompleted();
                 break;
             case -1:
-                responseObserver.onError(new Exception(NOT_FOUND.withDescription("User not found").asRuntimeException()));
+                responseObserver.onError(new Exception(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException()));
                 break;
             case -2:
-                responseObserver.onError(new Exception(INVALID_ARGUMENT.withDescription("Can't transfer to same account").asRuntimeException()));
+                responseObserver.onError(new Exception(NOT_FOUND.withDescription("User not found").asRuntimeException()));
                 break;
             case -3:
-                responseObserver.onError(new Exception(INVALID_ARGUMENT.withDescription("Invalid amount").asRuntimeException()));
+                responseObserver.onError(new Exception(INVALID_ARGUMENT.withDescription("Can't transfer to same account").asRuntimeException()));
                 break;
             case -4:
+                responseObserver.onError(new Exception(INVALID_ARGUMENT.withDescription("Invalid amount").asRuntimeException()));
+                break;
+            case -5:
                 responseObserver.onError(new Exception(INVALID_ARGUMENT.withDescription("Not enough balance").asRuntimeException()));
                 break;
 
