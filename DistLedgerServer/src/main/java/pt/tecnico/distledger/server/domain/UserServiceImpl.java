@@ -15,7 +15,7 @@ public class UserServiceImpl extends UserServiceImplBase{
     }
 
     @Override
-    public void balance(BalanceRequest request, StreamObserver<BalanceResponse> responseObserver) {
+    public synchronized void balance(BalanceRequest request, StreamObserver<BalanceResponse> responseObserver) {
         int res = ledger.getBalance(request.getUserId());
         
         switch (res) {
@@ -35,7 +35,7 @@ public class UserServiceImpl extends UserServiceImplBase{
     }
     
     @Override
-    public void createAccount(CreateAccountRequest request, StreamObserver<CreateAccountResponse> responseObserver) {
+    public synchronized void createAccount(CreateAccountRequest request, StreamObserver<CreateAccountResponse> responseObserver) {
         int res = ledger.createAccount(request.getUserId());
         switch (res) {
             case 0:

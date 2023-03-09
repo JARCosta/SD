@@ -29,7 +29,7 @@ public class AdminServiceImpl extends AdminServiceImplBase{
         for (Operation op : ledger.getOperations()) {
             OperationType type;
             DistLedgerCommonDefinitions.Operation operation;
-            System.out.println("operation " + op.getClass().getName() + (op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.CreateOp") + (op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.DeleteAccount") + (op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.TransferOp"));
+            // System.out.println("operation " + op.getClass().getName() + (op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.CreateOp") + (op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.DeleteAccount") + (op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.TransferOp"));
             if(op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.CreateOp"){
                 type = DistLedgerCommonDefinitions.OperationType.OP_CREATE_ACCOUNT;
                 operation = DistLedgerCommonDefinitions.Operation.newBuilder().setType(type).setUserId(op.getAccount()).build();
@@ -52,7 +52,7 @@ public class AdminServiceImpl extends AdminServiceImplBase{
     }
 
     @Override
-    public void activate(ActivateRequest request, StreamObserver<ActivateResponse> responseObserver) {
+    public synchronized void activate(ActivateRequest request, StreamObserver<ActivateResponse> responseObserver) {
         int res = ledger.activate();
         switch (res) {
             case 0:
@@ -72,7 +72,7 @@ public class AdminServiceImpl extends AdminServiceImplBase{
     }
 
     @Override
-    public void deactivate(DeactivateRequest request, StreamObserver<DeactivateResponse> responseObserver) {
+    public synchronized void deactivate(DeactivateRequest request, StreamObserver<DeactivateResponse> responseObserver) {
         int res = ledger.deactivate();
         switch (res) {
             case 0:
