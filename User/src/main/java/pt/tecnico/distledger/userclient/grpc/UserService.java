@@ -1,4 +1,5 @@
 package pt.tecnico.distledger.userclient.grpc;
+
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
@@ -12,14 +13,7 @@ public class UserService {
     
     public UserService(String host, int port) {
         final String target = host + ":" + port;
-
-        // Channel is the abstraction to connect to a service endpoint.
-        // Let us use plaintext communication because we do not have certificates.
         channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
-
-        // It is up to the client to determine whether to block the call.
-        // Here we create a blocking stub, but an async stub,
-        // or an async stub with Future are always possible.
         stub = UserServiceGrpc.newBlockingStub(channel);
     }
 

@@ -5,18 +5,20 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import pt.ulisboa.tecnico.distledger.contract.admin.AdminServiceGrpc;
 import pt.ulisboa.tecnico.distledger.contract.admin.AdminDistLedger.*;
-public class AdminService {
 
+
+public class AdminService {
     private AdminServiceGrpc.AdminServiceBlockingStub stub;
+    private final ManagedChannel channel;
 
     public AdminService(String host, int port) {
         final String target = host + ":" + port;
-        createStub(target);
-    }
-    
-    public void createStub(final String target) {
-		final ManagedChannel channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
+        channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
         stub = AdminServiceGrpc.newBlockingStub(channel);
+    }
+
+    public void shutdownNowChannel() {
+        channel.shutdownNow();
     }
 
     public void activate(){
