@@ -53,7 +53,6 @@ public class AdminServiceImpl extends AdminServiceImplBase{
 
     @Override
     public synchronized void activate(ActivateRequest request, StreamObserver<ActivateResponse> responseObserver) {
-    public void activate(ActivateRequest request, StreamObserver<ActivateResponse> responseObserver) {
         ledger.activate();
         ActivateResponse response = ActivateResponse.newBuilder().build();
         responseObserver.onNext(response);
