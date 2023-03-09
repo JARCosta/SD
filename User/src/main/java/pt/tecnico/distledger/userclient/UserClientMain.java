@@ -29,12 +29,12 @@ public class UserClientMain {
 
 
         
-
-        CommandParser parser = new CommandParser(new UserService(host, port));
+        UserService userService = new UserService(host, port);
+        CommandParser parser = new CommandParser(userService);
         parser.parseInput();
         
 		// A Channel should be shutdown before stopping the process.
-		// channel.shutdownNow();
+		userService.shutdownNowChannel();
 
     }
 }
