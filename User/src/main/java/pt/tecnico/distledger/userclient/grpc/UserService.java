@@ -52,7 +52,8 @@ public class UserService {
         try{
             BalanceResponse result = stub.balance(BalanceRequest.newBuilder().setUserId(username).build());
             System.out.println(result == null ? "null" : "OK");
-            System.out.println(result.getValue());
+            if(result.getValue() > 0)
+                System.out.println(result.getValue());
         }
         catch (StatusRuntimeException e){
             System.out.println(e.getStatus().getDescription());

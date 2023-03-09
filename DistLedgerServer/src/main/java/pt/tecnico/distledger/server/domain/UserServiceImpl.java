@@ -53,7 +53,7 @@ public class UserServiceImpl extends UserServiceImplBase{
     }
 
     @Override
-    public void deleteAccount(DeleteAccountRequest request, StreamObserver<DeleteAccountResponse> responseObserver) {
+    public synchronized void deleteAccount(DeleteAccountRequest request, StreamObserver<DeleteAccountResponse> responseObserver) {
         int res = ledger.deleteAccount(request.getUserId());
         switch (res) {
             case 0:
@@ -78,7 +78,7 @@ public class UserServiceImpl extends UserServiceImplBase{
     }
 
     @Override
-    public void transferTo(TransferToRequest request, StreamObserver<TransferToResponse> responseObserver) {
+    public synchronized void transferTo(TransferToRequest request, StreamObserver<TransferToResponse> responseObserver) {
         int res = ledger.transferTo(request.getAccountFrom(), request.getAccountTo(), request.getAmount());
 
         switch (res) {

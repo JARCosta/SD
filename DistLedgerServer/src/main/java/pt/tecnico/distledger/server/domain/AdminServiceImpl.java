@@ -23,28 +23,26 @@ public class AdminServiceImpl extends AdminServiceImplBase{
     
 
     @Override
-    public void getLedgerState(getLedgerStateRequest request, StreamObserver<getLedgerStateResponse> responseObserver) {
+    public synchronized void getLedgerState(getLedgerStateRequest request, StreamObserver<getLedgerStateResponse> responseObserver) {
         
         LedgerState.Builder ledgerState = LedgerState.newBuilder();
         for (Operation op : ledger.getOperations()) {
             OperationType type;
             DistLedgerCommonDefinitions.Operation operation;
-            switch (op.getClass().getName()) {
-                case "CreateAccount":
-                    type = DistLedgerCommonDefinitions.OperationType.OP_CREATE_ACCOUNT;
-                    operation = DistLedgerCommonDefinitions.Operation.newBuilder().setType(type).setUserId(op.getAccount()).build();
-                case "DeleteAccount":
-                    type = DistLedgerCommonDefinitions.OperationType.OP_DELETE_ACCOUNT;
-                    operation = DistLedgerCommonDefinitions.Operation.newBuilder().setType(type).setUserId(op.getAccount()).build();
-                case "TransferOp":
-                    type = DistLedgerCommonDefinitions.OperationType.OP_TRANSFER_TO;
-                    operation = DistLedgerCommonDefinitions.Operation.newBuilder().setType(type).setUserId(op.getAccount()).setDestUserId(((TransferOp) op).getDestAccount()).setAmount(((TransferOp) op).getAmount()).build();
-                default:
-                    type = DistLedgerCommonDefinitions.OperationType.OP_UNSPECIFIED;
-                    operation = DistLedgerCommonDefinitions.Operation.newBuilder().setType(type).setUserId(op.getAccount()).build();
+            System.out.println("operation " + op.getClass().getName() + (op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.CreateOp") + (op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.DeleteAccount") + (op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.TransferOp"));
+            if(op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.CreateOp"){
+                type = DistLedgerCommonDefinitions.OperationType.OP_CREATE_ACCOUNT;
+                operation = DistLedgerCommonDefinitions.Operation.newBuilder().setType(type).setUserId(op.getAccount()).build();
+            } else if(op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.DeleteOp"){
+                type = DistLedgerCommonDefinitions.OperationType.OP_DELETE_ACCOUNT;
+                operation = DistLedgerCommonDefinitions.Operation.newBuilder().setType(type).setUserId(op.getAccount()).build();
+            } else if (op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.TransferOp"){
+                type = DistLedgerCommonDefinitions.OperationType.OP_TRANSFER_TO;
+                operation = DistLedgerCommonDefinitions.Operation.newBuilder().setType(type).setUserId(op.getAccount()).setDestUserId(((TransferOp) op).getDestAccount()).setAmount(((TransferOp) op).getAmount()).build();
+            }else {
+                type = DistLedgerCommonDefinitions.OperationType.OP_UNSPECIFIED;
+                operation = DistLedgerCommonDefinitions.Operation.newBuilder().setType(type).setUserId(op.getAccount()).build();
             }
-
-            operation = DistLedgerCommonDefinitions.Operation.newBuilder().setType(type).setUserId(op.getAccount())./*setDestUserId(null).setAmount(0).*/build();
             ledgerState.addLedger(operation);
         }
         getLedgerStateResponse response = getLedgerStateResponse.newBuilder().setLedgerState(ledgerState.build()).build();
@@ -54,6 +52,7 @@ public class AdminServiceImpl extends AdminServiceImplBase{
     }
 
     @Override
+    public synchronized void activate(ActivateRequest request, StreamObserver<ActivateResponse> responseObserver) {
     public void activate(ActivateRequest request, StreamObserver<ActivateResponse> responseObserver) {
         ledger.activate();
         ActivateResponse response = ActivateResponse.newBuilder().build();
@@ -62,7 +61,7 @@ public class AdminServiceImpl extends AdminServiceImplBase{
     }
 
     @Override
-    public void deactivate(DeactivateRequest request, StreamObserver<DeactivateResponse> responseObserver) {
+    public synchronized void deactivate(DeactivateRequest request, StreamObserver<DeactivateResponse> responseObserver) {
         ledger.deactivate();
         DeactivateResponse response = DeactivateResponse.newBuilder().build();
         responseObserver.onNext(response);
