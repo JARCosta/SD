@@ -1,6 +1,7 @@
 package pt.tecnico.distledger.server.domain;
 
 import io.grpc.stub.StreamObserver;
+import pt.tecnico.distledger.server.Debug;
 import pt.ulisboa.tecnico.distledger.contract.admin.AdminServiceGrpc.AdminServiceImplBase;
 import pt.tecnico.distledger.server.domain.operation.Operation;
 import pt.tecnico.distledger.server.domain.operation.TransferOp;
@@ -20,11 +21,10 @@ public class AdminServiceImpl extends AdminServiceImplBase{
         this.ledger = serverState;
     }
 
-    
-
     @Override
     public synchronized void getLedgerState(getLedgerStateRequest request, StreamObserver<getLedgerStateResponse> responseObserver) {
-        
+        Debug.debug("Received get ledger state request.");
+
         LedgerState.Builder ledgerState = LedgerState.newBuilder();
         for (Operation op : ledger.getOperations()) {
             OperationType type;
@@ -45,20 +45,26 @@ public class AdminServiceImpl extends AdminServiceImplBase{
             }
             ledgerState.addLedger(operation);
         }
+
         getLedgerStateResponse response = getLedgerStateResponse.newBuilder().setLedgerState(ledgerState.build()).build();
-        
+        Debug.debug("Sending response.");
         responseObserver.onNext(response);
         responseObserver.onCompleted();
+        Debug.debug("Request handled.");
     }
 
     @Override
     public synchronized void activate(ActivateRequest request, StreamObserver<ActivateResponse> responseObserver) {
+        Debug.debug("Received activate server request.");
+
         int res = ledger.activate();
         switch (res) {
             case 0:
                 ActivateResponse response = ActivateResponse.newBuilder().build();
+                Debug.debug("Sending response.");
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
+                Debug.debug("Request handled.");
                 break;
             case -1:
                 responseObserver.onError(new Exception(CANCELLED.withDescription("Server already actived").asRuntimeException()));
@@ -73,12 +79,16 @@ public class AdminServiceImpl extends AdminServiceImplBase{
 
     @Override
     public synchronized void deactivate(DeactivateRequest request, StreamObserver<DeactivateResponse> responseObserver) {
+        Debug.debug("Received deactivate server request.");
+
         int res = ledger.deactivate();
         switch (res) {
             case 0:
                 DeactivateResponse response = DeactivateResponse.newBuilder().build();
+                Debug.debug("Sending response.");
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
+                Debug.debug("Request handled.");
                 break;
             case -1:
                 responseObserver.onError(new Exception(CANCELLED.withDescription("Server already deactived").asRuntimeException()));

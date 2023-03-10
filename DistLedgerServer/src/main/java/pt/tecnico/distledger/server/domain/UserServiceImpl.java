@@ -2,6 +2,7 @@ package pt.tecnico.distledger.server.domain;
 
 import io.grpc.Server;
 import io.grpc.stub.StreamObserver;
+import pt.tecnico.distledger.server.Debug;
 import pt.ulisboa.tecnico.distledger.contract.user.UserDistLedger.*;
 import pt.ulisboa.tecnico.distledger.contract.user.UserServiceGrpc.UserServiceImplBase;
 
@@ -16,8 +17,9 @@ public class UserServiceImpl extends UserServiceImplBase{
 
     @Override
     public synchronized void balance(BalanceRequest request, StreamObserver<BalanceResponse> responseObserver) {
+        Debug.debug("Received balance request for " + request.getUserId() + ".");
+
         int res = ledger.getBalance(request.getUserId());
-        
         switch (res) {
             case -1:
                 responseObserver.onError(new Exception(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException()));
@@ -27,8 +29,10 @@ public class UserServiceImpl extends UserServiceImplBase{
                 break;
             default:
                 BalanceResponse response = BalanceResponse.newBuilder().setValue(ledger.getBalance(request.getUserId())).build();
+                Debug.debug("Sending response.");
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
+                Debug.debug("Request handled.");
                 break;
         }
         
@@ -36,12 +40,16 @@ public class UserServiceImpl extends UserServiceImplBase{
     
     @Override
     public synchronized void createAccount(CreateAccountRequest request, StreamObserver<CreateAccountResponse> responseObserver) {
+        Debug.debug("Received create account request with name " + request.getUserId() + ".");
+
         int res = ledger.createAccount(request.getUserId());
         switch (res) {
             case 0:
                 CreateAccountResponse response = CreateAccountResponse.newBuilder().build();
+                Debug.debug("Sending response.");
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
+                Debug.debug("Request handled.");
                 break;
             case -1:
                 responseObserver.onError(new Exception(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException()));
@@ -59,12 +67,16 @@ public class UserServiceImpl extends UserServiceImplBase{
 
     @Override
     public synchronized void deleteAccount(DeleteAccountRequest request, StreamObserver<DeleteAccountResponse> responseObserver) {
+        Debug.debug("Received delete account request for " + request.getUserId() + ".");
+
         int res = ledger.deleteAccount(request.getUserId());
         switch (res) {
             case 0:
                 DeleteAccountResponse response = DeleteAccountResponse.newBuilder().build();
+                Debug.debug("Sending response.");
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
+                Debug.debug("Request handled.");
                 break;
             case -1:
                 responseObserver.onError(new Exception(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException()));
@@ -84,13 +96,18 @@ public class UserServiceImpl extends UserServiceImplBase{
 
     @Override
     public synchronized void transferTo(TransferToRequest request, StreamObserver<TransferToResponse> responseObserver) {
+        Debug.debug("Received transfer request of " + request.getAmount()
+                + " from " + request.getAccountFrom() + " to " + request.getAccountTo() + ".");
+
         int res = ledger.transferTo(request.getAccountFrom(), request.getAccountTo(), request.getAmount());
 
         switch (res) {
             case 0:
                 TransferToResponse response = TransferToResponse.newBuilder().build();
+                Debug.debug("Sending response.");
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
+                Debug.debug("Request handled.");
                 break;
             case -1:
                 responseObserver.onError(new Exception(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException()));
