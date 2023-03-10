@@ -6,16 +6,6 @@ import java.util.Scanner;
 
 public class CommandParser {
 
-    /** Set flag to true to print debug messages.
-     * The flag can be set using the -Ddebug command line option. */
-    private static final boolean DEBUG_FLAG = (System.getProperty("debug") != null);
-
-    /** Helper method to print debug messages. */
-    private static void debug(String debugMessage) {
-        if (DEBUG_FLAG)
-            System.err.println(debugMessage);
-    }
-
     private static final String SPACE = " ";
     private static final String ACTIVATE = "activate";
     private static final String DEACTIVATE = "deactivate";
@@ -79,9 +69,9 @@ public class CommandParser {
         }
         String server = split[1];
 
-        debug("Asking server '" + server + "' to activate...");
+        Debug.debug("Asking server '" + server + "' to activate...");
         adminService.activate();
-        debug("Server completed the activate operation.");
+        Debug.debug("Server completed the activate operation.");
     }
 
     private void deactivate(String line){
@@ -93,9 +83,9 @@ public class CommandParser {
         }
         String server = split[1];
 
-        debug("Asking server '" + server + "' to deactivate...");
+        Debug.debug("Asking server '" + server + "' to deactivate...");
         adminService.deactivate();
-        debug("Server completed the deactivate operation.");
+        Debug.debug("Server completed the deactivate operation.");
     }
 
     private void dump(String line){
@@ -107,9 +97,9 @@ public class CommandParser {
         }
         String server = split[1];
 
-        debug("Asking server '" + server + "' to get the server state...");
+        Debug.debug("Asking server '" + server + "' to get the server state...");
         adminService.getLedgerState();
-        debug("Server completed the get server state operation.");
+        Debug.debug("Server completed the get server state operation.");
     }
 
     @SuppressWarnings("unused")

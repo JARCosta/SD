@@ -3,6 +3,7 @@ package pt.tecnico.distledger.userclient.grpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
+import pt.tecnico.distledger.userclient.Debug;
 import pt.ulisboa.tecnico.distledger.contract.user.UserServiceGrpc;
 import pt.ulisboa.tecnico.distledger.contract.user.UserDistLedger.*;
 
@@ -13,6 +14,8 @@ public class UserService {
     
     public UserService(String host, int port) {
         final String target = host + ":" + port;
+        Debug.debug("Target: " + target);
+
         channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
         stub = UserServiceGrpc.newBlockingStub(channel);
     }

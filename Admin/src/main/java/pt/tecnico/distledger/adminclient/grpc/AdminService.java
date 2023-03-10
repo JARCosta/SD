@@ -3,6 +3,7 @@ package pt.tecnico.distledger.adminclient.grpc;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
+import pt.tecnico.distledger.adminclient.Debug;
 import pt.ulisboa.tecnico.distledger.contract.admin.AdminServiceGrpc;
 import pt.ulisboa.tecnico.distledger.contract.admin.AdminDistLedger.*;
 
@@ -13,6 +14,8 @@ public class AdminService {
 
     public AdminService(String host, int port) {
         final String target = host + ":" + port;
+        Debug.debug("Target: " + target);
+
         channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
         stub = AdminServiceGrpc.newBlockingStub(channel);
     }
