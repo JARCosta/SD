@@ -54,6 +54,7 @@ public class CommandParser {
                     break;
 
                 default:
+                    System.err.println("Invalid command");
                     break;
             }
 
