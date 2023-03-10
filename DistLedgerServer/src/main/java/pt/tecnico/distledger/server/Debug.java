@@ -1,4 +1,5 @@
 package pt.tecnico.distledger.server;
+
 public class Debug {
     /** Set flag to true to print debug messages.
      * The flag can be set using the -Ddebug command line option. */

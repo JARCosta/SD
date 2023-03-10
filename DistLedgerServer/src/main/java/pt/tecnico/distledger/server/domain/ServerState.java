@@ -23,7 +23,6 @@ public class ServerState {
         this.isServerActive = true;
     }
 
-
     public Integer activate(){
         if(isServerActive) return -1;
         this.isServerActive = true;

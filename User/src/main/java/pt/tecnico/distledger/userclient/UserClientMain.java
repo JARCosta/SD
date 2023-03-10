@@ -1,10 +1,6 @@
 package pt.tecnico.distledger.userclient;
 
-
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import pt.tecnico.distledger.userclient.grpc.UserService;
-import pt.ulisboa.tecnico.distledger.contract.user.UserServiceGrpc;
 
 public class UserClientMain {
     

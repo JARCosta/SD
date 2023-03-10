@@ -22,7 +22,8 @@ public class AdminServiceImpl extends AdminServiceImplBase{
     }
 
     @Override
-    public synchronized void getLedgerState(getLedgerStateRequest request, StreamObserver<getLedgerStateResponse> responseObserver) {
+    public synchronized void getLedgerState(getLedgerStateRequest request,
+                                            StreamObserver<getLedgerStateResponse> responseObserver) {
         Debug.debug("Received get ledger state request.");
 
         LedgerState.Builder ledgerState = LedgerState.newBuilder();
@@ -32,21 +33,38 @@ public class AdminServiceImpl extends AdminServiceImplBase{
             // System.out.println("operation " + op.getClass().getName() + (op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.CreateOp") + (op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.DeleteAccount") + (op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.TransferOp"));
             if(op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.CreateOp"){
                 type = DistLedgerCommonDefinitions.OperationType.OP_CREATE_ACCOUNT;
-                operation = DistLedgerCommonDefinitions.Operation.newBuilder().setType(type).setUserId(op.getAccount()).build();
+                operation = DistLedgerCommonDefinitions.Operation.newBuilder()
+                        .setType(type)
+                        .setUserId(op.getAccount())
+                        .build();
             } else if(op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.DeleteOp"){
                 type = DistLedgerCommonDefinitions.OperationType.OP_DELETE_ACCOUNT;
-                operation = DistLedgerCommonDefinitions.Operation.newBuilder().setType(type).setUserId(op.getAccount()).build();
+                operation = DistLedgerCommonDefinitions.Operation.newBuilder()
+                        .setType(type)
+                        .setUserId(op.getAccount())
+                        .build();
             } else if (op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.TransferOp"){
                 type = DistLedgerCommonDefinitions.OperationType.OP_TRANSFER_TO;
-                operation = DistLedgerCommonDefinitions.Operation.newBuilder().setType(type).setUserId(op.getAccount()).setDestUserId(((TransferOp) op).getDestAccount()).setAmount(((TransferOp) op).getAmount()).build();
-            }else {
+                operation = DistLedgerCommonDefinitions.Operation.newBuilder()
+                        .setType(type)
+                        .setUserId(op.getAccount())
+                        .setDestUserId(((TransferOp) op).getDestAccount())
+                        .setAmount(((TransferOp) op).getAmount())
+                        .build();
+            } else {
                 type = DistLedgerCommonDefinitions.OperationType.OP_UNSPECIFIED;
-                operation = DistLedgerCommonDefinitions.Operation.newBuilder().setType(type).setUserId(op.getAccount()).build();
+                operation = DistLedgerCommonDefinitions.Operation.newBuilder()
+                        .setType(type)
+                        .setUserId(op.getAccount())
+                        .build();
             }
             ledgerState.addLedger(operation);
         }
 
-        getLedgerStateResponse response = getLedgerStateResponse.newBuilder().setLedgerState(ledgerState.build()).build();
+        getLedgerStateResponse response = getLedgerStateResponse.newBuilder()
+                .setLedgerState(ledgerState.build())
+                .build();
+
         Debug.debug("Sending response.");
         responseObserver.onNext(response);
         responseObserver.onCompleted();
@@ -61,41 +79,48 @@ public class AdminServiceImpl extends AdminServiceImplBase{
         switch (res) {
             case 0:
                 ActivateResponse response = ActivateResponse.newBuilder().build();
+
                 Debug.debug("Sending response.");
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
                 Debug.debug("Request handled.");
                 break;
             case -1:
-                responseObserver.onError(new Exception(CANCELLED.withDescription("Server already actived").asRuntimeException()));
+                responseObserver.onError(
+                        new Exception(CANCELLED.withDescription("Server already actived").asRuntimeException()));
                 break;
         
             default:
-                responseObserver.onError(new Exception(UNKNOWN.withDescription("Failed to activate").asRuntimeException()));
+                responseObserver.onError(
+                        new Exception(UNKNOWN.withDescription("Failed to activate").asRuntimeException()));
                 break;
         }
 
     }
 
     @Override
-    public synchronized void deactivate(DeactivateRequest request, StreamObserver<DeactivateResponse> responseObserver) {
+    public synchronized void deactivate(DeactivateRequest request,
+                                        StreamObserver<DeactivateResponse> responseObserver) {
         Debug.debug("Received deactivate server request.");
 
         int res = ledger.deactivate();
         switch (res) {
             case 0:
                 DeactivateResponse response = DeactivateResponse.newBuilder().build();
+
                 Debug.debug("Sending response.");
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
                 Debug.debug("Request handled.");
                 break;
             case -1:
-                responseObserver.onError(new Exception(CANCELLED.withDescription("Server already deactived").asRuntimeException()));
+                responseObserver.onError(
+                        new Exception(CANCELLED.withDescription("Server already deactived").asRuntimeException()));
                 break;
         
             default:
-                responseObserver.onError(new Exception(UNKNOWN.withDescription("Failed to deactivate").asRuntimeException()));
+                responseObserver.onError(
+                        new Exception(UNKNOWN.withDescription("Failed to deactivate").asRuntimeException()));
                 break;
         }
     }

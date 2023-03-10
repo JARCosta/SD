@@ -1,12 +1,7 @@
 package pt.tecnico.distledger.userclient;
 
 import pt.tecnico.distledger.userclient.grpc.UserService;
-import pt.ulisboa.tecnico.distledger.contract.user.UserServiceGrpc;
-import pt.ulisboa.tecnico.distledger.contract.user.UserDistLedger.*;
-
 import java.util.Scanner;
-
-import io.grpc.StatusRuntimeException;
 
 public class CommandParser {
 
@@ -77,11 +72,11 @@ public class CommandParser {
             this.printUsage();
             return;
         }
-
         String server = split[1];
         String username = split[2];
 
-        Debug.debug("Asking server '" + server + "' to create account with username '" + username + "'...");
+        Debug.debug("Asking server '" + server +
+                "' to create account with username '" + username + "'...");
         userService.createAccount(username);
         Debug.debug("Server completed the create account operation.");
     }
@@ -96,7 +91,8 @@ public class CommandParser {
         String server = split[1];
         String username = split[2];
 
-        Debug.debug("Asking server '" + server + "' to delete account with username '" + username + "'...");
+        Debug.debug("Asking server '" + server +
+                "' to delete account with username '" + username + "'...");
         userService.deleteAccount(username);
         Debug.debug("Server completed the delete account operation.");
     }
@@ -129,7 +125,8 @@ public class CommandParser {
         String dest = split[3];
         Integer amount = Integer.valueOf(split[4]);
 
-        Debug.debug("Asking server '" + server + "' to transfer " + amount + " from '" + from + "' to '" + dest + "...");
+        Debug.debug("Asking server '" + server + "' to transfer " + amount +
+                " from '" + from + "' to '" + dest + "...");
         userService.transferTo(from, dest, amount);
         Debug.debug("Server completed the transfer to operation.");
     }

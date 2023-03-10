@@ -1,11 +1,11 @@
 package pt.tecnico.distledger.server;
-import static java.lang.System.*;
 
 import java.io.IOException;
 
 import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+
 import pt.tecnico.distledger.server.domain.AdminServiceImpl;
 import pt.tecnico.distledger.server.domain.ServerState;
 import pt.tecnico.distledger.server.domain.UserServiceImpl;

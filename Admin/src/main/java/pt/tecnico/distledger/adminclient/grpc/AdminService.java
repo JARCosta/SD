@@ -7,7 +7,6 @@ import pt.tecnico.distledger.adminclient.Debug;
 import pt.ulisboa.tecnico.distledger.contract.admin.AdminServiceGrpc;
 import pt.ulisboa.tecnico.distledger.contract.admin.AdminDistLedger.*;
 
-
 public class AdminService {
     private AdminServiceGrpc.AdminServiceBlockingStub stub;
     private final ManagedChannel channel;
@@ -48,7 +47,7 @@ public class AdminService {
         try{
             getLedgerStateResponse result =  stub.getLedgerState(getLedgerStateRequest.newBuilder().build());
             System.out.println(result == null ? "null" : "OK");
-            // System.out.println(result.getState());
+
             System.out.println(result.toString());
         }
         catch (StatusRuntimeException e){
