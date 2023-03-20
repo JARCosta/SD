@@ -1,0 +1,64 @@
+package pt.tecnico.distledger.namingserver.domain;
+
+import io.grpc.stub.StreamObserver;
+import pt.tecnico.distledger.namingserver.Debug;
+import pt.ulisboa.tecnico.distledger.contract.distledgerserver.NamingServerServiceGrpc.NamingServerServiceImplBase;
+//import pt.ulisboa.tecnico.distledger.contract.distledgerserver.NamingServerServiceOuterClass.RegisterResponse;
+import pt.ulisboa.tecnico.distledger.contract.distledgerserver.NamingServerServiceOuterClass.*;
+/*
+import pt.tecnico.distledger.server.domain.operation.Operation;
+import pt.tecnico.distledger.server.domain.operation.TransferOp;
+import pt.ulisboa.tecnico.distledger.contract.DistLedgerCommonDefinitions.LedgerState;
+import pt.ulisboa.tecnico.distledger.contract.DistLedgerCommonDefinitions.OperationType;
+import pt.ulisboa.tecnico.distledger.contract.DistLedgerCommonDefinitions;
+import pt.ulisboa.tecnico.distledger.contract.admin.AdminDistLedger.*;*/
+
+import static io.grpc.Status.*;
+import java.util.Map;
+
+
+
+public class NamingServerServiceImpl extends NamingServerServiceImplBase {
+
+    private Map<String, ServiceEntry> services;
+
+    public NamingServerServiceImpl(Map<String, ServiceEntry> services) {
+        this.services = services;
+    }
+
+    @Override
+    public void register(RegisterRequest request,
+                         StreamObserver<RegisterResponse> responseObserver) {
+        Debug.debug("Received register request.");
+
+        Debug.debug(request.getServiceName());
+        Debug.debug(request.getQualifier());
+        Debug.debug(request.getAddress());
+
+        String serviceName = request.getServiceName();
+        String qualifier = request.getQualifier();
+        String address = request.getAddress();
+
+        ServiceEntry serviceEntry = services.get(serviceName);
+
+        if (serviceEntry == null){
+            serviceEntry = new ServiceEntry(serviceName);
+            services.put(serviceName, serviceEntry);
+        }
+
+        serviceEntry.addServerEntry(address, qualifier);
+
+        Debug.debug("Service Entry: " + serviceEntry.toString());
+        Debug.debug("Number of services: " + services.size());
+
+        // prepare response
+        RegisterResponse response = RegisterResponse.newBuilder().build();
+
+        Debug.debug("Sending response.");
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+        Debug.debug("Request handled.");
+
+    }
+
+}

@@ -1,0 +1,16 @@
+syntax = "proto3";
+package pt.ulisboa.tecnico.distledger.contract.distledgerserver;
+
+message RegisterRequest {
+  string serviceName = 1;
+  string qualifier = 2;
+  string address = 3;
+}
+
+message RegisterResponse {
+
+}
+
+service NamingServerService {
+  rpc register(RegisterRequest) returns (RegisterResponse);
+}

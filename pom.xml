@@ -18,8 +18,8 @@
 		<module>Admin</module>
 		<module>DistLedgerServer</module>
 
-		<!-- This one should only be used in phases 2 and 3
-		 <module>NamingServer</module>-->
+		<!-- This one should only be used in phases 2 and 3-->
+		 <module>NamingServer</module>
 	</modules>
 
 </project>
