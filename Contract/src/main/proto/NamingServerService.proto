@@ -1,5 +1,5 @@
 syntax = "proto3";
-package pt.ulisboa.tecnico.distledger.contract.distledgerserver;
+package pt.ulisboa.tecnico.distledger.contract.namingserver;
 
 message RegisterRequest {
   string serviceName = 1;
@@ -11,6 +11,16 @@ message RegisterResponse {
 
 }
 
+message LookupRequest {
+  string serviceName = 1;
+  string qualifier = 2;
+}
+
+message LookupResponse {
+  repeated string servers = 1;
+}
+
 service NamingServerService {
   rpc register(RegisterRequest) returns (RegisterResponse);
+  rpc lookup(LookupRequest) returns (LookupResponse);
 }

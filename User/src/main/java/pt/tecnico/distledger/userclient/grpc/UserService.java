@@ -11,8 +11,8 @@ public class UserService {
     private UserServiceGrpc.UserServiceBlockingStub stub;
     private final ManagedChannel channel;
     
-    public UserService(String host, int port) {
-        final String target = host + ":" + port;
+    public UserService(String target) {
+//        final String target = host + ":" + port;
         Debug.debug("Target: " + target);
 
         channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();

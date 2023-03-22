@@ -29,10 +29,27 @@ public class ServiceEntry {
         servers.remove(server);
     }
 */
-/*    public List<ServerEntry> getServers() {
-        return servers;
+    public List<String> getServers() {
+        List<String> res = new ArrayList<String>();
+
+        for (ServerEntry serverEntry : servers) {
+            res.add(serverEntry.getAddress());
+        }
+
+        return res;
     }
-*/
+
+    public List<String> getServers(String qualifier) {
+        List<String> res = new ArrayList<String>();
+
+            for (ServerEntry serverEntry : servers) {
+                if (serverEntry.getQualifier().equals(qualifier))
+                    res.add(serverEntry.getAddress());
+            }
+
+        return res;
+    }
+
 
 
 }

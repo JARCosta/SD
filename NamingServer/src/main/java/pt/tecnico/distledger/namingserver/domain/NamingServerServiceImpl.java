@@ -2,9 +2,9 @@ package pt.tecnico.distledger.namingserver.domain;
 
 import io.grpc.stub.StreamObserver;
 import pt.tecnico.distledger.namingserver.Debug;
-import pt.ulisboa.tecnico.distledger.contract.distledgerserver.NamingServerServiceGrpc.NamingServerServiceImplBase;
+import pt.ulisboa.tecnico.distledger.contract.namingserver.NamingServerServiceGrpc.NamingServerServiceImplBase;
 //import pt.ulisboa.tecnico.distledger.contract.distledgerserver.NamingServerServiceOuterClass.RegisterResponse;
-import pt.ulisboa.tecnico.distledger.contract.distledgerserver.NamingServerServiceOuterClass.*;
+import pt.ulisboa.tecnico.distledger.contract.namingserver.NamingServerServiceOuterClass.*;
 /*
 import pt.tecnico.distledger.server.domain.operation.Operation;
 import pt.tecnico.distledger.server.domain.operation.TransferOp;
@@ -15,6 +15,8 @@ import pt.ulisboa.tecnico.distledger.contract.admin.AdminDistLedger.*;*/
 
 import static io.grpc.Status.*;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 
 
@@ -53,6 +55,37 @@ public class NamingServerServiceImpl extends NamingServerServiceImplBase {
 
         // prepare response
         RegisterResponse response = RegisterResponse.newBuilder().build();
+
+        Debug.debug("Sending response.");
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+        Debug.debug("Request handled.");
+
+    }
+
+    @Override
+    public void lookup(LookupRequest request,
+                         StreamObserver<LookupResponse> responseObserver) {
+        Debug.debug("Received lookup request.");
+
+        Debug.debug(request.getServiceName());
+        Debug.debug(request.getQualifier());
+
+        String serviceName = request.getServiceName();
+        String qualifier = request.getQualifier();
+
+        ServiceEntry serviceEntry = services.get(serviceName);
+        List<String> servers = new ArrayList<>();
+
+        if (serviceEntry != null){
+            if (qualifier == "")
+                servers = serviceEntry.getServers();
+            else
+                servers = serviceEntry.getServers(qualifier);
+        }
+
+        // prepare response
+        LookupResponse response = LookupResponse.newBuilder().addAllServers(servers).build();
 
         Debug.debug("Sending response.");
         responseObserver.onNext(response);

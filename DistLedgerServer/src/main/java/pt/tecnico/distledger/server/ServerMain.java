@@ -16,14 +16,12 @@ public class ServerMain {
 	public static void registerInNamingServer(String port, String qualifier){
 
 		String host = "localhost";
-		String address = host + ":" + port;
-		Debug.debug("Address: " + address);
-
-		String serviceName = "DistLedgerServerService";
-
 		int namingServerPort = 5001;
 		NamingServerService namingServerService = new NamingServerService(host, namingServerPort);
 
+		String serviceName = "DistLedgerServerService";
+		String address = host + ":" + port;
+		Debug.debug("Address: " + address);
 		namingServerService.register(serviceName, qualifier, address);
 
 		namingServerService.shutdownNowChannel();

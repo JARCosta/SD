@@ -128,15 +128,15 @@
 				<groupId>org.xolstice.maven.plugins</groupId>
 				<artifactId>protobuf-maven-plugin</artifactId>
 				<version>${version.protobuf-maven-plugin}</version>
-				<configuration>
+				<configuration><!--
+					<protocArtifact>com.google.protobuf:protoc:${version.protoc}:exe:osx-x86_64</protocArtifact>
+					<pluginId>grpc-java</pluginId>
+					<pluginArtifact>io.grpc:protoc-gen-grpc-java:${version.grpc}:exe:osx-x86_64</pluginArtifact>-->
+					<!-- FOR MACS WITH ARM PROCESSORS COMMENT THE LINES ABOVE AND UNCOMMENT THE FOLLOWING-->
 					<protocArtifact>com.google.protobuf:protoc:${version.protoc}:exe:osx-x86_64</protocArtifact>
 					<pluginId>grpc-java</pluginId>
 					<pluginArtifact>io.grpc:protoc-gen-grpc-java:${version.grpc}:exe:osx-x86_64</pluginArtifact>
-					<!-- FOR MACS WITH ARM PROCESSORS COMMENT THE LINES ABOVE AND UNCOMMENT THE FOLLOWING
-					<protocArtifact>com.google.protobuf:protoc:${version.protoc}:exe:osx-x86_64</protocArtifact>
-					<pluginId>grpc-java</pluginId>
-					<pluginArtifact>io.grpc:protoc-gen-grpc-java:${version.grpc}:exe:osx-x86_64</pluginArtifact>
-					-->
+
 				</configuration>
 				<executions>
 					<execution>

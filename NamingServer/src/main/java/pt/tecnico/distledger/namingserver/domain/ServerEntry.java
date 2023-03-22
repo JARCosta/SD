@@ -9,15 +9,15 @@ public class ServerEntry {
         this.address = address;
         this.qualifier = qualifier;
     }
-/*
+
     public String getQualifier() {
         return qualifier;
     }
 
-    public String getTarget() {
-        return target;
+    public String getAddress() {
+        return address;
     }
-
+/*
     public void setQualifier(String qualifier) {
         this.qualifier = qualifier;
     }
