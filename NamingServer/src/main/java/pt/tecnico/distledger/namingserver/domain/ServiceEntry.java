@@ -25,10 +25,19 @@ public class ServiceEntry {
         this.servers = servers;
     }
 */
-/*    public void removeServerEntry(ServerEntry serverEntry) {
-        servers.remove(server);
+    public void removeServerEntry(String address) {
+        for(ServerEntry s : servers) {
+            if(s.getAddress().equals(address)) {
+                servers.remove(s);
+                break;
+            }
+        }
+
+        // Debug.debug("Server Entry: " + serverEntry.toString());
+        Debug.debug("Number of Servers: " + servers.size());
+
     }
-*/
+
     public List<String> getServers() {
         List<String> res = new ArrayList<String>();
 

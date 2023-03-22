@@ -5,8 +5,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import pt.ulisboa.tecnico.distledger.contract.namingserver.NamingServerServiceGrpc;
 //import pt.ulisboa.tecnico.distledger.contract.distledgerserver.NamingServerService.*;
-import pt.ulisboa.tecnico.distledger.contract.namingserver.NamingServerServiceOuterClass.RegisterResponse;
-import pt.ulisboa.tecnico.distledger.contract.namingserver.NamingServerServiceOuterClass.RegisterRequest;
+import pt.ulisboa.tecnico.distledger.contract.namingserver.NamingServerServiceOuterClass.*;
 
 public class NamingServerService {
     private NamingServerServiceGrpc.NamingServerServiceBlockingStub stub;
@@ -37,10 +36,21 @@ public class NamingServerService {
             System.out.println(e.getStatus().getDescription());
         }
     }
-/*
-    public void delete(){
+
+    public void delete(String serviceName, String address){
+        try{
+            DeleteResponse result = stub.delete(DeleteRequest.newBuilder()
+                    .setServiceName(serviceName)
+                    .setAddress(address)
+                    .build());
+            System.out.println(result == null ? "null" : "OK");
+        }
+        catch (StatusRuntimeException e){
+            System.out.println(e.getStatus().getDescription());
+        }
 
     }
+/*
 
     public void lookup(){
 

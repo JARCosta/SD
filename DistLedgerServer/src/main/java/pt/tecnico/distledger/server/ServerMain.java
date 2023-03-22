@@ -53,6 +53,11 @@ public class ServerMain {
 		// Server threads are running in the background.
 		System.out.println("Server started");
 
+		NamingServerService namingServerService = new NamingServerService("localhost", 5001);
+		CommandParser parser = new CommandParser(namingServerService);
+        parser.parseInput();
+
+		namingServerService.shutdownNowChannel();
 		// Do not exit the main thread. Wait until server is terminated.
 		server.awaitTermination();
     }

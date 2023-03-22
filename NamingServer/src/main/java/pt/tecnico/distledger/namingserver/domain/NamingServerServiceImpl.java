@@ -94,4 +94,31 @@ public class NamingServerServiceImpl extends NamingServerServiceImplBase {
 
     }
 
+    @Override
+    public void delete(DeleteRequest request,
+                         StreamObserver<DeleteResponse> responseObserver) {
+        Debug.debug("Received delete request.");
+
+        Debug.debug(request.getServiceName());
+        Debug.debug(request.getAddress());
+
+        String serviceName = request.getServiceName();
+        String address = request.getAddress();
+
+        ServiceEntry serviceEntry = services.get(serviceName);
+
+        serviceEntry.removeServerEntry(address);
+
+        Debug.debug("Service Entry: " + serviceEntry.toString());
+        Debug.debug("Number of services: " + services.size());
+
+        // prepare response
+        DeleteResponse response = DeleteResponse.newBuilder().build();
+
+        Debug.debug("Sending response.");
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+        Debug.debug("Request handled.");
+
+    }
 }
