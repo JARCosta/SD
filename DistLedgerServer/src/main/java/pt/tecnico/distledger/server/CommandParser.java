@@ -7,6 +7,7 @@ public class CommandParser {
 
     private static final String SPACE = " ";
     private static final String DELETE = "delete";
+    private static final String EXIT = "exit";
     private final NamingServerService namingServerService;
 
     public CommandParser(NamingServerService namingServerService) {
@@ -28,7 +29,9 @@ public class CommandParser {
                     case DELETE:
                         this.delete(line);
                         break;
-
+                    case EXIT:
+                        exit = true;
+                        break;
                     default:
                         System.err.println("Invalid command");
                         break;
@@ -58,6 +61,7 @@ public class CommandParser {
 
     private void printUsage() {
         System.out.println("Usage:\n" +
-                        "- delete <serviceName> <address>\n");
+                        "- delete <serviceName> <address>\n" + 
+                        "- exit\n");
     }
 }

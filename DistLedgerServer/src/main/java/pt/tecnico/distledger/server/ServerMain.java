@@ -60,6 +60,11 @@ public class ServerMain {
 		namingServerService.shutdownNowChannel();
 		// Do not exit the main thread. Wait until server is terminated.
 		server.awaitTermination();
+
+		System.out.println("Press enter to shutdown");
+		System.in.read();
+		server.shutdown();
+
     }
 }
 
