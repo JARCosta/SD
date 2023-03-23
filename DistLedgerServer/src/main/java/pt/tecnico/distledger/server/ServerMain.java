@@ -1,8 +1,11 @@
 package pt.tecnico.distledger.server;
 
 import java.io.IOException;
+import java.util.*;
 
 import io.grpc.BindableService;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.ManagedChannel;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
@@ -10,6 +13,7 @@ import pt.tecnico.distledger.server.domain.AdminServiceImpl;
 import pt.tecnico.distledger.server.domain.ServerState;
 import pt.tecnico.distledger.server.domain.UserServiceImpl;
 import pt.tecnico.distledger.server.grpc.NamingServerService;
+import pt.ulisboa.tecnico.distledger.contract.distledgerserver.DistLedgerCrossServerServiceGrpc;
 
 public class ServerMain {
 
@@ -34,9 +38,17 @@ public class ServerMain {
 		ServerState ledger;
 		// Create new server state
 		if(qualifier.equals("A")){
-			ledger = new ServerState(true);
+			List<String> neighbours = namingServerService.lookup(serviceName, qualifier);
+			List<DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub> stubs = new ArrayList<>();
+			for(String neighbour : neighbours){
+				ManagedChannel channel = ManagedChannelBuilder.forTarget(neighbour).usePlaintext().build();
+				DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub stub;
+				stub = DistLedgerCrossServerServiceGrpc.newBlockingStub(channel);
+				stubs.add(stub);
+			}
+			ledger = new ServerState(stubs);
 		}else{
-			ledger = new ServerState(false);
+			ledger = new ServerState();
 		}
 
 		final BindableService userService = new UserServiceImpl(ledger);
