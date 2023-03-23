@@ -23,13 +23,13 @@ public class ServerState {
         this.isServerActive = true;
     }
 
-    public Integer activate(){
+    public Integer activate(String qualifier){
         if(isServerActive) return -1;
         this.isServerActive = true;
         return 0;
     }
 
-    public Integer deactivate(){
+    public Integer deactivate(String qualifier){
         if(!isServerActive) return -1;
         this.isServerActive = false;
         return 0;

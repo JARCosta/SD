@@ -11,8 +11,8 @@ public class AdminService {
     private AdminServiceGrpc.AdminServiceBlockingStub stub;
     private final ManagedChannel channel;
 
-    public AdminService(String host, int port) {
-        final String target = host + ":" + port;
+    public AdminService(String target) {
+        
         Debug.debug("Target: " + target);
 
         channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();

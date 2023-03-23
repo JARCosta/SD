@@ -5,11 +5,15 @@ import "DistLedgerCommonDefinitions.proto";
 
 // Administrator Interface of the DistLedger Service
 
-message ActivateRequest {}
+message ActivateRequest {
+  string qualifier = 1;
+}
 
 message ActivateResponse {}
 
-message DeactivateRequest {}
+message DeactivateRequest {
+  string qualifier = 1;
+}
 
 message DeactivateResponse {}
 

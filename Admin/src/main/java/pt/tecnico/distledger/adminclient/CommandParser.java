@@ -1,8 +1,9 @@
 package pt.tecnico.distledger.adminclient;
 
 import pt.tecnico.distledger.adminclient.grpc.AdminService;
+import pt.tecnico.distledger.adminclient.grpc.NamingServerService;
 
-import java.util.Scanner;
+import java.util.*;
 
 public class CommandParser {
 
@@ -14,10 +15,37 @@ public class CommandParser {
     private static final String HELP = "help";
     private static final String EXIT = "exit";
 
-    private final AdminService adminService;
-    public CommandParser(AdminService adminService) {
-        this.adminService = adminService;
+    private AdminService readAdminService;
+    private AdminService writeAdminService;
+
+    public CommandParser() {
+        this.readAdminService = new AdminService(lookup("B").get(0));
+        this.writeAdminService = new AdminService(lookup("A").get(0));
+        if (readAdminService == null || writeAdminService == null ) {
+            Debug.debug("No servers with the name and/or qualifier");
+            System.exit(0);
+        }
     }
+
+    public static List<String> lookup(String qualifier){
+
+        String host = "localhost";
+        int namingServerPort = 5001;
+        NamingServerService namingServerService = new NamingServerService(host, namingServerPort);
+
+        String serviceName = "DistLedgerServerService";
+        List<String> servers = namingServerService.lookup(serviceName, qualifier);
+
+        return servers;
+    }
+
+    public AdminService getUserService(String server){
+        if(server.equals("B"))
+            return readAdminService;
+        else 
+            return writeAdminService;
+    }
+
     void parseInput() {
 
         Scanner scanner = new Scanner(System.in);
@@ -59,6 +87,10 @@ public class CommandParser {
             }
 
         }
+        // A Channel should be shutdown before stopping the process.
+        readAdminService.shutdownNowChannel();
+        writeAdminService.shutdownNowChannel();
+
     }
 
     private void activate(String line){
@@ -71,7 +103,13 @@ public class CommandParser {
         String server = split[1];
 
         Debug.debug("Asking server '" + server + "' to activate...");
-        adminService.activate();
+        AdminService adminService = getUserService(server);
+        try{
+            adminService.activate();
+        }catch (Exception e){
+            adminService = new AdminService(lookup(server).get(0));
+            adminService.activate();
+        }
         Debug.debug("Server completed the activate operation.");
     }
 
@@ -85,7 +123,13 @@ public class CommandParser {
         String server = split[1];
 
         Debug.debug("Asking server '" + server + "' to deactivate...");
-        adminService.deactivate();
+        AdminService adminService = getUserService(server);
+        try{
+            adminService.deactivate();
+        } catch (Exception e){
+            adminService = new AdminService(lookup(server).get(0));
+            adminService.deactivate();
+        }
         Debug.debug("Server completed the deactivate operation.");
     }
 
@@ -99,7 +143,13 @@ public class CommandParser {
         String server = split[1];
 
         Debug.debug("Asking server '" + server + "' to get the server state...");
-        adminService.getLedgerState();
+        AdminService adminService = getUserService(server);
+        try{
+            adminService.getLedgerState();
+        } catch (Exception e){
+            adminService = new AdminService(lookup(server).get(0));
+            adminService.getLedgerState();
+        }
         Debug.debug("Server completed the get server state operation.");
     }
 

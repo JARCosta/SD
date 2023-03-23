@@ -1,7 +1,8 @@
 package pt.tecnico.distledger.userclient;
 
+import pt.tecnico.distledger.userclient.grpc.NamingServerService;
 import pt.tecnico.distledger.userclient.grpc.UserService;
-import java.util.Scanner;
+import java.util.*;
 
 public class CommandParser {
 
@@ -13,10 +14,35 @@ public class CommandParser {
     private static final String HELP = "help";
     private static final String EXIT = "exit";
 
-    private final UserService userService;
+    private UserService readUserService;
+    private UserService writeUserService;
 
-    public CommandParser(UserService userService) {
-        this.userService = userService;
+    public CommandParser() {
+        this.readUserService = new UserService(lookup("B").get(0));
+        this.writeUserService = new UserService(lookup("A").get(0));
+        if (readUserService == null || writeUserService == null ) {
+            Debug.debug("No servers with the name and/or qualifier");
+            System.exit(0);
+        }
+    }
+
+    public static List<String> lookup(String qualifier){
+
+        String host = "localhost";
+        int namingServerPort = 5001;
+        NamingServerService namingServerService = new NamingServerService(host, namingServerPort);
+
+        String serviceName = "DistLedgerServerService";
+        List<String> servers = namingServerService.lookup(serviceName, qualifier);
+
+        return servers;
+    }
+
+    public UserService getUserService(String server){
+        if(server.equals("B"))
+            return readUserService;
+        else 
+            return writeUserService;
     }
 
     void parseInput() {
@@ -64,6 +90,9 @@ public class CommandParser {
                 System.err.println(e.getMessage());
             }
         }
+		// A Channel should be shutdown before stopping the process.
+        writeUserService.shutdownNowChannel();
+        readUserService.shutdownNowChannel();
     }
 
     private void createAccount(String line){
@@ -78,7 +107,13 @@ public class CommandParser {
 
         Debug.debug("Asking server '" + server +
                 "' to create account with username '" + username + "'...");
-        userService.createAccount(username);
+        UserService userService = getUserService(server);
+        try{
+            userService.createAccount(username);
+        }catch (Exception e){
+            userService = new UserService(lookup(server).get(0));
+            userService.createAccount(username);
+        }
         Debug.debug("Server completed the create account operation.");
     }
 
@@ -94,7 +129,13 @@ public class CommandParser {
 
         Debug.debug("Asking server '" + server +
                 "' to delete account with username '" + username + "'...");
-        userService.deleteAccount(username);
+        UserService userService = getUserService(server);
+        try{
+            userService.deleteAccount(username);
+        }catch (Exception e){
+            userService = new UserService(lookup(server).get(0));
+            userService.deleteAccount(username);
+        }
         Debug.debug("Server completed the delete account operation.");
     }
 
@@ -110,7 +151,13 @@ public class CommandParser {
         String username = split[2];
 
         Debug.debug("Asking server '" + server + "' to see the balance of '" + username + "'...");
-        userService.balance(username);
+        UserService userService = getUserService(server);
+        try{
+            userService.balance(username);
+        } catch (Exception e){
+            userService = new UserService(lookup(server).get(0));
+            userService.balance(username);
+        }
         Debug.debug("Server completed the balance operation.");
     }
 
@@ -128,7 +175,12 @@ public class CommandParser {
 
         Debug.debug("Asking server '" + server + "' to transfer " + amount +
                 " from '" + from + "' to '" + dest + "...");
-        userService.transferTo(from, dest, amount);
+        try{
+        writeUserService.transferTo(from, dest, amount);
+        }catch (Exception e){
+            writeUserService = new UserService(lookup("A").get(0));
+            writeUserService.transferTo(from, dest, amount);
+        }
         Debug.debug("Server completed the transfer to operation.");
     }
 

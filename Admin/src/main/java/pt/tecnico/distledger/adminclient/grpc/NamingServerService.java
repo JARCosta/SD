@@ -1,4 +1,4 @@
-package pt.tecnico.distledger.userclient.grpc;
+package pt.tecnico.distledger.adminclient.grpc;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;

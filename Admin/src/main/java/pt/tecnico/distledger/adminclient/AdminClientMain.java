@@ -20,14 +20,8 @@ public class AdminClientMain {
             return;
         }
 
-        final String host = args[0];
-        final int port = Integer.parseInt(args[1]);
-
-        AdminService adminService = new AdminService(host, port);
-        CommandParser parser = new CommandParser(adminService);
+        CommandParser parser = new CommandParser();
         parser.parseInput();
 
-        // A Channel should be shutdown before stopping the process.
-        adminService.shutdownNowChannel();
     }
 }

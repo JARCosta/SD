@@ -75,7 +75,7 @@ public class AdminServiceImpl extends AdminServiceImplBase{
     public synchronized void activate(ActivateRequest request, StreamObserver<ActivateResponse> responseObserver) {
         Debug.debug("Received activate server request.");
 
-        int res = ledger.activate();
+        int res = ledger.activate(request.getQualifier());
         switch (res) {
             case 0:
                 ActivateResponse response = ActivateResponse.newBuilder().build();
@@ -103,7 +103,7 @@ public class AdminServiceImpl extends AdminServiceImplBase{
                                         StreamObserver<DeactivateResponse> responseObserver) {
         Debug.debug("Received deactivate server request.");
 
-        int res = ledger.deactivate();
+        int res = ledger.deactivate(request.getQualifier());
         switch (res) {
             case 0:
                 DeactivateResponse response = DeactivateResponse.newBuilder().build();
