@@ -5,6 +5,7 @@ import pt.tecnico.distledger.server.domain.operation.CreateOp;
 import pt.tecnico.distledger.server.domain.operation.DeleteOp;
 import pt.tecnico.distledger.server.domain.operation.Operation;
 import pt.tecnico.distledger.server.domain.operation.TransferOp;
+import pt.tecnico.distledger.server.grpc.NamingServerService;
 import pt.ulisboa.tecnico.distledger.contract.DistLedgerCommonDefinitions;
 import pt.ulisboa.tecnico.distledger.contract.distledgerserver.DistLedgerCrossServerServiceGrpc;
 import pt.ulisboa.tecnico.distledger.contract.distledgerserver.CrossServerDistLedger.PropagateStateRequest;
@@ -15,21 +16,41 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+
 public class ServerState {
     private List<Operation> ledger = new ArrayList<>();
     private Map<String, Integer> accounts = new HashMap<>();
     public boolean isServerActive;
     public boolean isPrimaryServer;
-    private List<DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub> crossServerStubs;
+    public NamingServerService namingServerService;
+    private String serviceName;
+    private String qualifier;
+    private List<DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub> crossServerStubs = new ArrayList<>();
 
     // Dictionary<String, Integer> accounts = new Hashtable<>();
 
-    public ServerState(List<DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub> stubs) {
+    public ServerState(NamingServerService namingServerService, String serviceName, String qualifier) {
         this.ledger = new ArrayList<>();
         accounts.put("broker", 1000);
         this.isServerActive = true;
         this.isPrimaryServer = true;
-        this.crossServerStubs = stubs;
+        this.namingServerService = namingServerService;
+        this.serviceName = serviceName;
+        this.qualifier = qualifier;
+    }
+
+    private List<DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub> refreshStubs() {
+        List<String> neighbours = namingServerService.lookup(serviceName, qualifier);
+        List<DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub> crossServerStubs = new ArrayList<>();
+        for(String neighbour : neighbours){
+            ManagedChannel channel = ManagedChannelBuilder.forTarget(neighbour).usePlaintext().build();
+            DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub stub;
+            stub = DistLedgerCrossServerServiceGrpc.newBlockingStub(channel);
+            crossServerStubs.add(stub);
+        }
+        return crossServerStubs;
     }
 
     public ServerState() {
@@ -74,8 +95,9 @@ public class ServerState {
                         .setType(type)
                         .setUserId(op.getAccount())
                         .build();
-                        
-        for(DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub stub : crossServerStubs){
+        
+        this.crossServerStubs = refreshStubs();
+        for(DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub stub : this.crossServerStubs){
             PropagateStateResponse result = stub.propagateState(PropagateStateRequest.newBuilder()
                             .setOperation(operation)
                             .build());
@@ -101,8 +123,9 @@ public class ServerState {
                         .setType(type)
                         .setUserId(op.getAccount())
                         .build();
-                        
-        for(DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub stub : crossServerStubs){
+        
+        this.crossServerStubs = refreshStubs();
+        for(DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub stub : this.crossServerStubs){
             PropagateStateResponse result = stub.propagateState(PropagateStateRequest.newBuilder()
                             .setOperation(operation)
                             .build());
@@ -124,13 +147,14 @@ public class ServerState {
 
         DistLedgerCommonDefinitions.OperationType type = DistLedgerCommonDefinitions.OperationType.OP_TRANSFER_TO;
         DistLedgerCommonDefinitions.Operation operation = DistLedgerCommonDefinitions.Operation.newBuilder()
-                        .setType(type)
-                        .setUserId(op.getAccount())
-                        .setDestUserId(op.getDestAccount())
-                        .setAmount(op.getAmount())
-                        .build();
-                        
-        for(DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub stub : crossServerStubs){
+        .setType(type)
+        .setUserId(op.getAccount())
+        .setDestUserId(op.getDestAccount())
+        .setAmount(op.getAmount())
+        .build();
+        
+        this.crossServerStubs = refreshStubs();
+        for(DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub stub : this.crossServerStubs){
             PropagateStateResponse result = stub.propagateState(PropagateStateRequest.newBuilder()
                             .setOperation(operation)
                             .build());

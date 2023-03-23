@@ -38,15 +38,7 @@ public class ServerMain {
 		ServerState ledger;
 		// Create new server state
 		if(qualifier.equals("A")){
-			List<String> neighbours = namingServerService.lookup(serviceName, qualifier);
-			List<DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub> stubs = new ArrayList<>();
-			for(String neighbour : neighbours){
-				ManagedChannel channel = ManagedChannelBuilder.forTarget(neighbour).usePlaintext().build();
-				DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub stub;
-				stub = DistLedgerCrossServerServiceGrpc.newBlockingStub(channel);
-				stubs.add(stub);
-			}
-			ledger = new ServerState(stubs);
+			ledger = new ServerState(namingServerService);
 		}else{
 			ledger = new ServerState();
 		}
