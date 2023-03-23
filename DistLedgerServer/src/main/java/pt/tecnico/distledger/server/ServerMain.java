@@ -13,20 +13,8 @@ import pt.tecnico.distledger.server.grpc.NamingServerService;
 
 public class ServerMain {
 
-	public static void registerInNamingServer(String port, String qualifier){
-
-		String host = "localhost";
-		int namingServerPort = 5001;
-		NamingServerService namingServerService = new NamingServerService(host, namingServerPort);
-
-		String serviceName = "DistLedgerServerService";
-		String address = host + ":" + port;
-		Debug.debug("Address: " + address);
-		namingServerService.register(serviceName, qualifier, address);
-
-		namingServerService.shutdownNowChannel();
-
-	}
+	private final static String host = "localhost";
+	private final static String serviceName = "DistLedgerServerService";
 
     public static void main(String[] args) throws IOException, InterruptedException{
 
@@ -35,36 +23,38 @@ public class ServerMain {
 			System.out.printf("arg[%d] = %s%n", i, args[i]);
 		}
 
-		// register in naming server
-		registerInNamingServer(args[0], args[1]);
+		final String port = args[0];
+		final String qualifier = args[1];
+		final String address = host + ":" + port;
 
+		// Register server in naming server
+		NamingServerService namingServerService = new NamingServerService();
+		namingServerService.register(serviceName, qualifier, address);
+
+		// Create new server state
 		ServerState ledger = new ServerState();
 
-		final int port = Integer.parseInt(args[0]);
 		final BindableService userService = new UserServiceImpl(ledger);
 		final BindableService adminService = new AdminServiceImpl(ledger);
 
         // Create a new server to listen on port
-        Server server = ServerBuilder.forPort(port).addService(userService).addService(adminService).build();
+        Server server = ServerBuilder.forPort(Integer.parseInt(port))
+				.addService(userService)
+				.addService(adminService)
+				.build();
 
-		// Start the server
 		server.start();
-
-		// Server threads are running in the background.
 		System.out.println("Server started");
-
-		NamingServerService namingServerService = new NamingServerService("localhost", 5001);
-		CommandParser parser = new CommandParser(namingServerService);
-        parser.parseInput();
-
-		namingServerService.shutdownNowChannel();
-		// Do not exit the main thread. Wait until server is terminated.
-		server.awaitTermination();
 
 		System.out.println("Press enter to shutdown");
 		System.in.read();
-		server.shutdown();
 
-    }
+		// Delete server from naming server
+		namingServerService.delete(serviceName, address);
+		namingServerService.shutdownNowChannel();
+		server.shutdown();
+		server.awaitTermination();
+	}
+
 }
 

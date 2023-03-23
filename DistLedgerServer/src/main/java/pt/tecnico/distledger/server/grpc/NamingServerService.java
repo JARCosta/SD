@@ -4,18 +4,16 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import pt.ulisboa.tecnico.distledger.contract.namingserver.NamingServerServiceGrpc;
-//import pt.ulisboa.tecnico.distledger.contract.distledgerserver.NamingServerService.*;
 import pt.ulisboa.tecnico.distledger.contract.namingserver.NamingServerServiceOuterClass.*;
 
 public class NamingServerService {
-    private NamingServerServiceGrpc.NamingServerServiceBlockingStub stub;
+
+    private final String namingServerAddress = "localhost:5001";
     private final ManagedChannel channel;
+    private NamingServerServiceGrpc.NamingServerServiceBlockingStub stub;
 
-    public NamingServerService(String host, int port) {
-        final String target = host + ":" + port;
-//        Debug.debug("Target: " + target);
-
-        channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
+    public NamingServerService() {
+        channel = ManagedChannelBuilder.forTarget(namingServerAddress).usePlaintext().build();
         stub = NamingServerServiceGrpc.newBlockingStub(channel);
     }
 
@@ -48,12 +46,6 @@ public class NamingServerService {
         catch (StatusRuntimeException e){
             System.out.println(e.getStatus().getDescription());
         }
-
     }
-/*
 
-    public void lookup(){
-
-    }
-*/
 }
