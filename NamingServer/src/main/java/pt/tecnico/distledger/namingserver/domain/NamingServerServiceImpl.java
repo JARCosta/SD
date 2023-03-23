@@ -33,9 +33,9 @@ public class NamingServerServiceImpl extends NamingServerServiceImplBase {
                          StreamObserver<RegisterResponse> responseObserver) {
         Debug.debug("Received register request.");
 
-        Debug.debug(request.getServiceName());
-        Debug.debug(request.getQualifier());
-        Debug.debug(request.getAddress());
+        Debug.debug("Service Name: " + request.getServiceName());
+        Debug.debug("Qualifier: " + request.getQualifier());
+        Debug.debug("Target: " + request.getAddress());
 
         String serviceName = request.getServiceName();
         String qualifier = request.getQualifier();
@@ -60,6 +60,7 @@ public class NamingServerServiceImpl extends NamingServerServiceImplBase {
         responseObserver.onNext(response);
         responseObserver.onCompleted();
         Debug.debug("Request handled.");
+        Debug.debug("\n");
 
     }
 
@@ -91,6 +92,7 @@ public class NamingServerServiceImpl extends NamingServerServiceImplBase {
         responseObserver.onNext(response);
         responseObserver.onCompleted();
         Debug.debug("Request handled.");
+        Debug.debug("\n");
 
     }
 
@@ -119,6 +121,7 @@ public class NamingServerServiceImpl extends NamingServerServiceImplBase {
         responseObserver.onNext(response);
         responseObserver.onCompleted();
         Debug.debug("Request handled.");
+        Debug.debug("\n");
 
     }
 }

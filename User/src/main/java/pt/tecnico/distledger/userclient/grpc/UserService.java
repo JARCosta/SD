@@ -8,27 +8,36 @@ import pt.ulisboa.tecnico.distledger.contract.user.UserServiceGrpc;
 import pt.ulisboa.tecnico.distledger.contract.user.UserDistLedger.*;
 
 public class UserService {
-    private UserServiceGrpc.UserServiceBlockingStub stub;
-    private final ManagedChannel channel;
+    private UserServiceGrpc.UserServiceBlockingStub stub_User_A;
+    private UserServiceGrpc.UserServiceBlockingStub stub_A_B;
+    private final ManagedChannel channel1;
+    private final ManagedChannel channel2;
     
-    public UserService(String target) {
+    public UserService(String targetA, String targetB) {
 //        final String target = host + ":" + port;
-        Debug.debug("Target: " + target);
+        Debug.debug("Target: " + targetA);
 
-        channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
-        stub = UserServiceGrpc.newBlockingStub(channel);
+        channel1 = ManagedChannelBuilder.forTarget(targetA).usePlaintext().build();
+        channel2 = ManagedChannelBuilder.forTarget(targetB).usePlaintext().build(); 
+        stub_User_A = UserServiceGrpc.newBlockingStub(channel1);
+        stub_A_B = UserServiceGrpc.newBlockingStub(channel2);
+        
     }
 
     public void shutdownNowChannel() {
-        channel.shutdownNow();
+        channel1.shutdownNow();
     }
 
     public void createAccount(String username) {        
         try{
-            CreateAccountResponse result = stub.createAccount(CreateAccountRequest.newBuilder()
+            CreateAccountResponse result_A = stub_User_A.createAccount(CreateAccountRequest.newBuilder()
                     .setUserId(username)
                     .build());
-            System.out.println(result == null ? "null" : "OK");
+
+            stub_A_B.createAccount(CreateAccountRequest.newBuilder().setUserId(username).build());
+
+
+            System.out.println(result_A == null ? "null" : "OK");
         }
         catch (StatusRuntimeException e){
             System.out.println(e.getStatus().getDescription());
@@ -37,10 +46,10 @@ public class UserService {
 
     public void deleteAccount(String username) {
         try{
-            DeleteAccountResponse result = stub.deleteAccount(DeleteAccountRequest.newBuilder()
+            DeleteAccountResponse result_A = stub_User_A.deleteAccount(DeleteAccountRequest.newBuilder()
                     .setUserId(username)
                     .build());
-            System.out.println(result == null ? "null" : "OK");
+            System.out.println(result_A == null ? "null" : "OK");
         }
         catch (StatusRuntimeException e){
             System.out.println(e.getStatus().getDescription());
@@ -50,12 +59,12 @@ public class UserService {
 
     public void balance(String username) {
         try{
-            BalanceResponse result = stub.balance(BalanceRequest.newBuilder()
+            BalanceResponse result_A = stub_User_A.balance(BalanceRequest.newBuilder()
                     .setUserId(username)
                     .build());
-            System.out.println(result == null ? "null" : "OK");
-            if(result.getValue() > 0)
-                System.out.println(result.getValue());
+            System.out.println(result_A == null ? "null" : "OK");
+            if(result_A.getValue() > 0)
+                System.out.println(result_A.getValue());
         }
         catch (StatusRuntimeException e){
             System.out.println(e.getStatus().getDescription());
@@ -65,12 +74,12 @@ public class UserService {
 
     public void transferTo(String from, String dest, int amount) {
         try{
-            TransferToResponse result = stub.transferTo(TransferToRequest.newBuilder()
+            TransferToResponse result_A = stub_User_A.transferTo(TransferToRequest.newBuilder()
                     .setAccountFrom(from)
                     .setAccountTo(dest)
                     .setAmount(amount)
                     .build());
-            System.out.println(result == null ? "null" : "OK");
+            System.out.println(result_A == null ? "null" : "OK");
         }
         catch (StatusRuntimeException e){
             System.out.println(e.getStatus().getDescription());

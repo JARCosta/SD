@@ -49,7 +49,6 @@ public class ServerState {
     }
 
     public Integer createAccount(String userId) {
-        Debug.debug("isPrimaryServer = " + this.isPrimaryServer);
         if(!isServerActive) return -1;
         else if(!this.isPrimaryServer) return -3;
         else if(accountExists(userId)) return -2;
@@ -63,7 +62,6 @@ public class ServerState {
     }
 
     public Integer deleteAccount(String userId) {
-        Debug.debug("isPrimaryServer = " + this.isPrimaryServer);
         if(!isServerActive) return -1;
         else if(!this.isPrimaryServer) return -4;
         else if(!accountExists(userId)) return -2;
@@ -74,12 +72,11 @@ public class ServerState {
     }
 
     public Integer transferTo(String from, String dest, Integer amount) {
-        Debug.debug("isPrimaryServer = " + this.isPrimaryServer);
         if(!isServerActive) return -1;
         else if(!this.isPrimaryServer) return -6;
         else if(!(accountExists(from) && accountExists(dest))) return -2;
         else if(from.equals(dest)) return -3;
-        else if(amount < 0) return -4;
+        else if(amount <= 0) return -4;
         else if(getBalance(from) < amount) return -5;
         ledger.add(new TransferOp(from, dest, amount));
         accounts.put(from, accounts.get(from) - amount);
