@@ -31,8 +31,13 @@ public class ServerMain {
 		NamingServerService namingServerService = new NamingServerService();
 		namingServerService.register(serviceName, qualifier, address);
 
+		ServerState ledger;
 		// Create new server state
-		ServerState ledger = new ServerState();
+		if(qualifier.equals("A")){
+			ledger = new ServerState(true);
+		}else{
+			ledger = new ServerState(false);
+		}
 
 		final BindableService userService = new UserServiceImpl(ledger);
 		final BindableService adminService = new AdminServiceImpl(ledger);

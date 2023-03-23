@@ -64,6 +64,10 @@ public class UserServiceImpl extends UserServiceImplBase{
                 responseObserver.onError(
                         new Exception(ALREADY_EXISTS.withDescription("User already exists").asRuntimeException()));
                 break;
+            case -3:
+                responseObserver.onError(
+                    new Exception(NOT_FOUND.withDescription("B UNAVAILABLE").asRuntimeException()));
+                break;
 
             default:
                 responseObserver.onError(
@@ -97,6 +101,10 @@ public class UserServiceImpl extends UserServiceImplBase{
             case -3:
                 responseObserver.onError(
                         new Exception(INVALID_ARGUMENT.withDescription("Balance must be 0").asRuntimeException()));
+                break;
+            case -4:
+                responseObserver.onError(
+                    new Exception(NOT_FOUND.withDescription("B UNAVAILABLE").asRuntimeException()));
                 break;
         
             default:
@@ -141,6 +149,10 @@ public class UserServiceImpl extends UserServiceImplBase{
             case -5:
                 responseObserver.onError(
                         new Exception(INVALID_ARGUMENT.withDescription("Not enough balance").asRuntimeException()));
+                break;
+            case -6:
+                responseObserver.onError(
+                    new Exception(NOT_FOUND.withDescription("B UNAVAILABLE").asRuntimeException()));
                 break;
 
             default:

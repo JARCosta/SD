@@ -1,5 +1,6 @@
 package pt.tecnico.distledger.server.domain;
 
+import pt.tecnico.distledger.server.Debug;
 import pt.tecnico.distledger.server.domain.operation.CreateOp;
 import pt.tecnico.distledger.server.domain.operation.DeleteOp;
 import pt.tecnico.distledger.server.domain.operation.Operation;
@@ -14,13 +15,15 @@ public class ServerState {
     private List<Operation> ledger = new ArrayList<>();
     private Map<String, Integer> accounts = new HashMap<>();
     public boolean isServerActive;
+    public boolean isPrimaryServer;
 
     // Dictionary<String, Integer> accounts = new Hashtable<>();
 
-    public ServerState() {
+    public ServerState(boolean isPrimaryServer) {
         this.ledger = new ArrayList<>();
         accounts.put("broker", 1000);
         this.isServerActive = true;
+        this.isPrimaryServer = isPrimaryServer;
     }
 
     public Integer activate(String qualifier){
@@ -46,7 +49,9 @@ public class ServerState {
     }
 
     public Integer createAccount(String userId) {
+        Debug.debug("isPrimaryServer = " + this.isPrimaryServer);
         if(!isServerActive) return -1;
+        else if(!this.isPrimaryServer) return -3;
         else if(accountExists(userId)) return -2;
         ledger.add(new CreateOp(userId));
         accounts.put(userId, 0);
@@ -58,7 +63,9 @@ public class ServerState {
     }
 
     public Integer deleteAccount(String userId) {
+        Debug.debug("isPrimaryServer = " + this.isPrimaryServer);
         if(!isServerActive) return -1;
+        else if(!this.isPrimaryServer) return -4;
         else if(!accountExists(userId)) return -2;
         else if(getBalance(userId) != 0) return -3;
         ledger.add(new DeleteOp(userId));
@@ -67,7 +74,9 @@ public class ServerState {
     }
 
     public Integer transferTo(String from, String dest, Integer amount) {
+        Debug.debug("isPrimaryServer = " + this.isPrimaryServer);
         if(!isServerActive) return -1;
+        else if(!this.isPrimaryServer) return -6;
         else if(!(accountExists(from) && accountExists(dest))) return -2;
         else if(from.equals(dest)) return -3;
         else if(amount < 0) return -4;
