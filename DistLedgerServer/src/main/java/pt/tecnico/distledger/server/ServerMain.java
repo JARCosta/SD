@@ -38,7 +38,7 @@ public class ServerMain {
 		ServerState ledger;
 		// Create new server state
 		if(qualifier.equals("A")){
-			ledger = new ServerState(namingServerService);
+			ledger = new ServerState(namingServerService, serviceName, qualifier);
 		}else{
 			ledger = new ServerState();
 		}
