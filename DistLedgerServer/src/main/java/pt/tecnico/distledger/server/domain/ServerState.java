@@ -41,6 +41,13 @@ public class ServerState {
         this.qualifier = qualifier;
     }
 
+    public ServerState() {
+        this.ledger = new ArrayList<>();
+        accounts.put("broker", 1000);
+        this.isServerActive = true;
+        this.isPrimaryServer = false;
+    }
+
     private List<DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub> refreshStubs() {
         List<String> neighbours = namingServerService.lookup(serviceName, qualifier);
         List<DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub> crossServerStubs = new ArrayList<>();
@@ -51,13 +58,6 @@ public class ServerState {
             crossServerStubs.add(stub);
         }
         return crossServerStubs;
-    }
-
-    public ServerState() {
-        this.ledger = new ArrayList<>();
-        accounts.put("broker", 1000);
-        this.isServerActive = true;
-        this.isPrimaryServer = false;
     }
 
     public Integer activate(String qualifier){
@@ -98,9 +98,12 @@ public class ServerState {
         
         this.crossServerStubs = refreshStubs();
         for(DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub stub : this.crossServerStubs){
-            PropagateStateResponse result = stub.propagateState(PropagateStateRequest.newBuilder()
-                            .setOperation(operation)
-                            .build());
+            PropagateStateResponse result = null;
+            while (result == null){
+                result = stub.propagateState(PropagateStateRequest.newBuilder()
+                                .setOperation(operation)
+                                .build());
+            }
         }
         return 0;
     }
@@ -126,9 +129,12 @@ public class ServerState {
         
         this.crossServerStubs = refreshStubs();
         for(DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub stub : this.crossServerStubs){
-            PropagateStateResponse result = stub.propagateState(PropagateStateRequest.newBuilder()
-                            .setOperation(operation)
-                            .build());
+            PropagateStateResponse result = null;
+            while (result == null){
+                result = stub.propagateState(PropagateStateRequest.newBuilder()
+                                .setOperation(operation)
+                                .build());
+            }
         }
         return 0;
     }
@@ -155,10 +161,32 @@ public class ServerState {
         
         this.crossServerStubs = refreshStubs();
         for(DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub stub : this.crossServerStubs){
-            PropagateStateResponse result = stub.propagateState(PropagateStateRequest.newBuilder()
-                            .setOperation(operation)
-                            .build());
-        }        return 0;
+            PropagateStateResponse result = null;
+            while (result == null){
+                result = stub.propagateState(PropagateStateRequest.newBuilder()
+                                .setOperation(operation)
+                                .build());
+            }
+        }
+        return 0;
+    }
+
+
+    public void receiveOperation(DistLedgerCommonDefinitions.Operation op){
+        if(op.getType() == DistLedgerCommonDefinitions.OperationType.OP_CREATE_ACCOUNT){
+            CreateOp createOp = new CreateOp(op.getUserId());
+            ledger.add(createOp);
+            accounts.put(createOp.getAccount(), 0);
+        } else if(op.getType() == DistLedgerCommonDefinitions.OperationType.OP_DELETE_ACCOUNT){
+            DeleteOp deleteOp = new DeleteOp(op.getUserId());
+            ledger.add(deleteOp);
+            accounts.remove(deleteOp.getAccount());
+        } else if(op.getType() == DistLedgerCommonDefinitions.OperationType.OP_TRANSFER_TO){
+            TransferOp transferOp = new TransferOp(op.getUserId(), op.getDestUserId(), op.getAmount());
+            ledger.add(transferOp);
+            accounts.put(transferOp.getAccount(), accounts.get(transferOp.getAccount()) - transferOp.getAmount());
+            accounts.put(transferOp.getDestAccount(), accounts.get(transferOp.getDestAccount()) + transferOp.getAmount());
+        }
     }
 
 
