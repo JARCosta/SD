@@ -1,6 +1,5 @@
 package pt.tecnico.distledger.server.domain;
 
-import pt.tecnico.distledger.server.Debug;
 import pt.tecnico.distledger.server.domain.operation.CreateOp;
 import pt.tecnico.distledger.server.domain.operation.DeleteOp;
 import pt.tecnico.distledger.server.domain.operation.Operation;
@@ -87,24 +86,24 @@ public class ServerState {
         else if(!this.isPrimaryServer) return -3;
         else if(accountExists(userId)) return -2;
         CreateOp op = new CreateOp(userId);
-        ledger.add(op);
-        accounts.put(userId, 0);
-
+        
         DistLedgerCommonDefinitions.OperationType type = DistLedgerCommonDefinitions.OperationType.OP_CREATE_ACCOUNT;
         DistLedgerCommonDefinitions.Operation operation = DistLedgerCommonDefinitions.Operation.newBuilder()
-                        .setType(type)
-                        .setUserId(op.getAccount())
-                        .build();
+        .setType(type)
+        .setUserId(op.getAccount())
+        .build();
         
         this.crossServerStubs = refreshStubs();
         for(DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub stub : this.crossServerStubs){
             PropagateStateResponse result = null;
             while (result == null){
                 result = stub.propagateState(PropagateStateRequest.newBuilder()
-                                .setOperation(operation)
-                                .build());
+                .setOperation(operation)
+                .build());
             }
         }
+        ledger.add(op);
+        accounts.put(userId, 0);
         return 0;
     }
 
@@ -118,24 +117,24 @@ public class ServerState {
         else if(!accountExists(userId)) return -2;
         else if(getBalance(userId) != 0) return -3;
         DeleteOp op =  new DeleteOp(userId);
-        ledger.add(op);
-        accounts.remove(userId);
-
+        
         DistLedgerCommonDefinitions.OperationType type = DistLedgerCommonDefinitions.OperationType.OP_DELETE_ACCOUNT;
         DistLedgerCommonDefinitions.Operation operation = DistLedgerCommonDefinitions.Operation.newBuilder()
-                        .setType(type)
-                        .setUserId(op.getAccount())
-                        .build();
+        .setType(type)
+        .setUserId(op.getAccount())
+        .build();
         
         this.crossServerStubs = refreshStubs();
         for(DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub stub : this.crossServerStubs){
             PropagateStateResponse result = null;
             while (result == null){
                 result = stub.propagateState(PropagateStateRequest.newBuilder()
-                                .setOperation(operation)
-                                .build());
+                .setOperation(operation)
+                .build());
             }
         }
+        ledger.add(op);
+        accounts.remove(userId);
         return 0;
     }
 
@@ -147,9 +146,6 @@ public class ServerState {
         else if(amount <= 0) return -4;
         else if(getBalance(from) < amount) return -5;
         TransferOp op = new TransferOp(from, dest, amount);
-        ledger.add(op);
-        accounts.put(from, accounts.get(from) - amount);
-        accounts.put(dest, accounts.get(dest) + amount);
 
         DistLedgerCommonDefinitions.OperationType type = DistLedgerCommonDefinitions.OperationType.OP_TRANSFER_TO;
         DistLedgerCommonDefinitions.Operation operation = DistLedgerCommonDefinitions.Operation.newBuilder()
@@ -164,10 +160,13 @@ public class ServerState {
             PropagateStateResponse result = null;
             while (result == null){
                 result = stub.propagateState(PropagateStateRequest.newBuilder()
-                                .setOperation(operation)
-                                .build());
+                .setOperation(operation)
+                .build());
             }
         }
+        ledger.add(op);
+        accounts.put(from, accounts.get(from) - amount);
+        accounts.put(dest, accounts.get(dest) + amount);
         return 0;
     }
 
