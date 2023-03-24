@@ -175,11 +175,12 @@ public class CommandParser {
 
         Debug.debug("Asking server '" + server + "' to transfer " + amount +
                 " from '" + from + "' to '" + dest + "...");
+        UserService userService = getUserService(server);
         try{
-        writeUserService.transferTo(from, dest, amount);
+            userService.transferTo(from, dest, amount);
         }catch (Exception e){
-            writeUserService = new UserService(lookup(server).get(0));
-            writeUserService.transferTo(from, dest, amount);
+            userService = new UserService(lookup(server).get(0));
+            userService.transferTo(from, dest, amount);
         }
         Debug.debug("Server completed the transfer to operation.");
     }
