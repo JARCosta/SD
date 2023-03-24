@@ -10,6 +10,7 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
 import pt.tecnico.distledger.server.domain.AdminServiceImpl;
+import pt.tecnico.distledger.server.domain.DistLedgerCrossServerServiceImpl;
 import pt.tecnico.distledger.server.domain.ServerState;
 import pt.tecnico.distledger.server.domain.UserServiceImpl;
 import pt.tecnico.distledger.server.grpc.NamingServerService;
@@ -45,9 +46,10 @@ public class ServerMain {
 
 		final BindableService userService = new UserServiceImpl(ledger);
 		final BindableService adminService = new AdminServiceImpl(ledger);
+		final BindableService distLedgerCrossServerServiceImpl = new DistLedgerCrossServerServiceImpl(ledger);
 
 		// Create a new server to listen on port
-		Server server = ServerBuilder.forPort(Integer.parseInt(port)).addService(userService).addService(adminService)
+		Server server = ServerBuilder.forPort(Integer.parseInt(port)).addService(userService).addService(adminService).addService(distLedgerCrossServerServiceImpl)
 				.build();
 
 		server.start();
