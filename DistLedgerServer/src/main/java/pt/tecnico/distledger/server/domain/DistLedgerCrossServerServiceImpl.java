@@ -1,22 +1,19 @@
 package pt.tecnico.distledger.server.domain;
 
-import java.util.*;
-
 import io.grpc.stub.StreamObserver;
-import pt.tecnico.distledger.server.ServerMain;
-import pt.tecnico.distledger.server.domain.operation.Operation;
-import pt.ulisboa.tecnico.distledger.contract.DistLedgerCommonDefinitions;
 import pt.ulisboa.tecnico.distledger.contract.distledgerserver.CrossServerDistLedger.*;
+import pt.ulisboa.tecnico.distledger.contract.distledgerserver.DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceImplBase;
 
-public class DistLedgerCrossServerService {
+public class DistLedgerCrossServerServiceImpl extends DistLedgerCrossServerServiceImplBase{
 
     private ServerState serverState;
 
-    public DistLedgerCrossServerService(ServerState serverState) {
+    public DistLedgerCrossServerServiceImpl(ServerState serverState) {
         this.serverState = serverState;
     }
 
-    public void propagateState(PropagateStateRequest request, StreamObserver<PropagateStateResponse> responseObserver) {
+    @Override
+    public synchronized void propagateState(PropagateStateRequest request, StreamObserver<PropagateStateResponse> responseObserver) {
         System.out.println("Received PropagateStateRequest");
         
         serverState.receiveOperation(request.getOperation());

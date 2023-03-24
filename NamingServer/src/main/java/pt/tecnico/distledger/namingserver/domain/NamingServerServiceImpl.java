@@ -84,7 +84,7 @@ public class NamingServerServiceImpl extends NamingServerServiceImplBase {
             else
                 servers = serviceEntry.getServers(qualifier);
         }
-
+        Debug.debug("Servers: " + servers.toString());
         // prepare response
         LookupResponse response = LookupResponse.newBuilder().addAllServers(servers).build();
 

@@ -21,7 +21,7 @@ public class ServerMain {
 	private final static String serviceName = "DistLedgerServerService";
 
     public static void main(String[] args) throws IOException, InterruptedException{
-
+	
         System.out.printf("Received %d arguments%n", args.length);
 		for (int i = 0; i < args.length; i++) {
 			System.out.printf("arg[%d] = %s%n", i, args[i]);
@@ -55,14 +55,16 @@ public class ServerMain {
 		server.start();
 		System.out.println("Server started");
 
-		System.out.println("Press enter to shutdown");
-		System.in.read();
-
-		// Delete server from naming server
+		server.awaitTermination();
+		ShutdownHook shutdownHook = new ShutdownHook();
+		Runtime.getRuntime().addShutdownHook(new Thread(shutdownHook));
+		
 		namingServerService.delete(serviceName, address);
 		namingServerService.shutdownNowChannel();
 		server.shutdown();
 		server.awaitTermination();
+		// Delete server from naming server
+
 	}
 
 }
