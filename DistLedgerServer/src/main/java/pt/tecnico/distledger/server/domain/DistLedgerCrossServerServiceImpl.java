@@ -4,6 +4,7 @@ import io.grpc.stub.StreamObserver;
 import pt.ulisboa.tecnico.distledger.contract.distledgerserver.CrossServerDistLedger.*;
 import pt.ulisboa.tecnico.distledger.contract.distledgerserver.DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceImplBase;
 
+// servico oferecido pelo servidor B
 public class DistLedgerCrossServerServiceImpl extends DistLedgerCrossServerServiceImplBase{
 
     private ServerState serverState;
