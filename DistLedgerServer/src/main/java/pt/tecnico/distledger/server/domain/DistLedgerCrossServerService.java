@@ -8,11 +8,11 @@ import pt.tecnico.distledger.server.domain.operation.Operation;
 import pt.ulisboa.tecnico.distledger.contract.DistLedgerCommonDefinitions;
 import pt.ulisboa.tecnico.distledger.contract.distledgerserver.CrossServerDistLedger.*;
 
-public class CrossServerServiceImpl {
+public class DistLedgerCrossServerService {
 
     private ServerState serverState;
 
-    public CrossServerServiceImpl(ServerState serverState) {
+    public DistLedgerCrossServerService(ServerState serverState) {
         this.serverState = serverState;
     }
 
