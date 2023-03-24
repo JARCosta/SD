@@ -178,7 +178,7 @@ public class CommandParser {
         try{
         writeUserService.transferTo(from, dest, amount);
         }catch (Exception e){
-            writeUserService = new UserService(lookup("A").get(0));
+            writeUserService = new UserService(lookup(server).get(0));
             writeUserService.transferTo(from, dest, amount);
         }
         Debug.debug("Server completed the transfer to operation.");
