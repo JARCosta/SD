@@ -1,11 +1,10 @@
 package pt.tecnico.distledger.server.domain;
 
 import pt.tecnico.distledger.server.domain.operation.*;
+import pt.tecnico.distledger.server.grpc.DistLedgerCrossServerService;
 import pt.tecnico.distledger.server.grpc.NamingServerService;
 import pt.ulisboa.tecnico.distledger.contract.DistLedgerCommonDefinitions;
 import pt.ulisboa.tecnico.distledger.contract.distledgerserver.DistLedgerCrossServerServiceGrpc;
-import pt.ulisboa.tecnico.distledger.contract.distledgerserver.CrossServerDistLedger.PropagateStateRequest;
-import pt.ulisboa.tecnico.distledger.contract.distledgerserver.CrossServerDistLedger.PropagateStateResponse;
 import pt.ulisboa.tecnico.distledger.contract.distledgerserver.DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub;
 
 import java.util.ArrayList;
@@ -94,11 +93,8 @@ public class ServerState {
         
         this.crossServerStubs = refreshStubs();
         for(String neighbour : neighbours){
-            ManagedChannel channel = ManagedChannelBuilder.forTarget(neighbour).usePlaintext().build();
-            DistLedgerCrossServerServiceBlockingStub stub = DistLedgerCrossServerServiceGrpc.newBlockingStub(channel);
-            PropagateStateResponse result = stub.propagateState(PropagateStateRequest.newBuilder()
-            .setOperation(operation)
-            .build());
+            DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService();
+            distLedgerCrossServerService.propagateState(operation);
         }
         ledger.add(op);
         accounts.put(userId, 0);
@@ -124,11 +120,8 @@ public class ServerState {
         
         this.crossServerStubs = refreshStubs();
         for(String neighbour : neighbours){
-            ManagedChannel channel = ManagedChannelBuilder.forTarget(neighbour).usePlaintext().build();
-            DistLedgerCrossServerServiceBlockingStub stub = DistLedgerCrossServerServiceGrpc.newBlockingStub(channel);
-            PropagateStateResponse result = stub.propagateState(PropagateStateRequest.newBuilder()
-            .setOperation(operation)
-            .build());
+            DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService();
+            distLedgerCrossServerService.propagateState(operation);
         }
         ledger.add(op);
         accounts.remove(userId);
@@ -154,11 +147,8 @@ public class ServerState {
         
         this.crossServerStubs = refreshStubs();
         for(String neighbour : neighbours){
-            ManagedChannel channel = ManagedChannelBuilder.forTarget(neighbour).usePlaintext().build();
-            DistLedgerCrossServerServiceBlockingStub stub = DistLedgerCrossServerServiceGrpc.newBlockingStub(channel);
-            PropagateStateResponse result = stub.propagateState(PropagateStateRequest.newBuilder()
-            .setOperation(operation)
-            .build());
+            DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService();
+            distLedgerCrossServerService.propagateState(operation);
         }
         ledger.add(op);
         accounts.put(from, accounts.get(from) - amount);

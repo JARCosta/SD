@@ -1,10 +1,9 @@
 package pt.tecnico.distledger.server.grpc;
 
-import java.util.List;
-
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
+import pt.ulisboa.tecnico.distledger.contract.DistLedgerCommonDefinitions;
 import pt.ulisboa.tecnico.distledger.contract.distledgerserver.DistLedgerCrossServerServiceGrpc;
 //import pt.ulisboa.tecnico.distledger.contract.distledgerserver.DistLedgerCrossServerServiceOuterClass.*;
 import pt.ulisboa.tecnico.distledger.contract.distledgerserver.CrossServerDistLedger.*;
@@ -23,10 +22,10 @@ public class DistLedgerCrossServerService {
         stub = DistLedgerCrossServerServiceGrpc.newBlockingStub(channel);
     }
 
-    public void propagateState(){
+    public void propagateState(DistLedgerCommonDefinitions.Operation op){
         try{
             PropagateStateResponse result = stub.propagateState(PropagateStateRequest.newBuilder()
-                    //.setOperation()
+                    .setOperation(op)
                     .build());
             System.out.println(result == null ? "null" : "OK");
         }
