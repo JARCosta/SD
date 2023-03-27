@@ -93,7 +93,7 @@ public class ServerState {
         
         this.crossServerStubs = refreshStubs();
         for(String neighbour : neighbours){
-            DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService();
+            DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService(neighbour);
             distLedgerCrossServerService.propagateState(operation);
         }
         ledger.add(op);
@@ -120,7 +120,7 @@ public class ServerState {
         
         this.crossServerStubs = refreshStubs();
         for(String neighbour : neighbours){
-            DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService();
+            DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService(neighbour);
             distLedgerCrossServerService.propagateState(operation);
         }
         ledger.add(op);
@@ -147,7 +147,7 @@ public class ServerState {
         
         this.crossServerStubs = refreshStubs();
         for(String neighbour : neighbours){
-            DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService();
+            DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService(neighbour);
             distLedgerCrossServerService.propagateState(operation);
         }
         ledger.add(op);
