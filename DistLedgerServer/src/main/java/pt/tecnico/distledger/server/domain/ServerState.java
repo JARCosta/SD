@@ -5,7 +5,6 @@ import pt.tecnico.distledger.server.grpc.DistLedgerCrossServerService;
 import pt.tecnico.distledger.server.grpc.NamingServerService;
 import pt.ulisboa.tecnico.distledger.contract.DistLedgerCommonDefinitions;
 import pt.ulisboa.tecnico.distledger.contract.DistLedgerCommonDefinitions.LedgerState;
-import pt.ulisboa.tecnico.distledger.contract.admin.AdminDistLedger.getLedgerStateRequest;
 import pt.ulisboa.tecnico.distledger.contract.distledgerserver.DistLedgerCrossServerServiceGrpc;
 import pt.ulisboa.tecnico.distledger.contract.distledgerserver.DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub;
 
@@ -86,13 +85,7 @@ public class ServerState {
         else if(!this.isPrimaryServer) return -3;
         else if(accountExists(userId)) return -2;
         CreateOp op = new CreateOp(userId);
-        
-        DistLedgerCommonDefinitions.OperationType type = DistLedgerCommonDefinitions.OperationType.OP_CREATE_ACCOUNT;
-        DistLedgerCommonDefinitions.Operation operation = DistLedgerCommonDefinitions.Operation.newBuilder()
-        .setType(type)
-        .setUserId(op.getAccount())
-        .build();
-        
+                
         this.crossServerStubs = refreshStubs();
         for(String neighbour : neighbours){
             DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService(neighbour);
@@ -115,14 +108,6 @@ public class ServerState {
         else if(amount <= 0) return -4;
         else if(getBalance(from) < amount) return -5;
         TransferOp op = new TransferOp(from, dest, amount);
-
-        DistLedgerCommonDefinitions.OperationType type = DistLedgerCommonDefinitions.OperationType.OP_TRANSFER_TO;
-        DistLedgerCommonDefinitions.Operation operation = DistLedgerCommonDefinitions.Operation.newBuilder()
-        .setType(type)
-        .setUserId(op.getAccount())
-        .setDestUserId(op.getDestAccount())
-        .setAmount(op.getAmount())
-        .build();
         
         this.crossServerStubs = refreshStubs();
         for(String neighbour : neighbours){
