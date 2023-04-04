@@ -30,15 +30,8 @@ public class AdminServiceImpl extends AdminServiceImplBase{
         for (Operation op : ledger.getOperations()) {
             OperationType type;
             DistLedgerCommonDefinitions.Operation operation;
-            // System.out.println("operation " + op.getClass().getName() + (op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.CreateOp") + (op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.DeleteAccount") + (op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.TransferOp"));
             if(op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.CreateOp"){
                 type = DistLedgerCommonDefinitions.OperationType.OP_CREATE_ACCOUNT;
-                operation = DistLedgerCommonDefinitions.Operation.newBuilder()
-                        .setType(type)
-                        .setUserId(op.getAccount())
-                        .build();
-            } else if(op.getClass().getName() == "pt.tecnico.distledger.server.domain.operation.DeleteOp"){
-                type = DistLedgerCommonDefinitions.OperationType.OP_DELETE_ACCOUNT;
                 operation = DistLedgerCommonDefinitions.Operation.newBuilder()
                         .setType(type)
                         .setUserId(op.getAccount())

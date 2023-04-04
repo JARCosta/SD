@@ -4,6 +4,7 @@ import pt.tecnico.distledger.server.domain.operation.*;
 import pt.tecnico.distledger.server.grpc.DistLedgerCrossServerService;
 import pt.tecnico.distledger.server.grpc.NamingServerService;
 import pt.ulisboa.tecnico.distledger.contract.DistLedgerCommonDefinitions;
+import pt.ulisboa.tecnico.distledger.contract.DistLedgerCommonDefinitions.LedgerState;
 import pt.ulisboa.tecnico.distledger.contract.distledgerserver.DistLedgerCrossServerServiceGrpc;
 import pt.ulisboa.tecnico.distledger.contract.distledgerserver.DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub;
 
@@ -105,29 +106,6 @@ public class ServerState {
         return accounts.get(userId) != null;
     }
 
-    public Integer deleteAccount(String userId) {
-        if(!isServerActive) return -1;
-        else if(!this.isPrimaryServer) return -4;
-        else if(!accountExists(userId)) return -2;
-        else if(getBalance(userId) != 0) return -3;
-        DeleteOp op =  new DeleteOp(userId);
-        
-        DistLedgerCommonDefinitions.OperationType type = DistLedgerCommonDefinitions.OperationType.OP_DELETE_ACCOUNT;
-        DistLedgerCommonDefinitions.Operation operation = DistLedgerCommonDefinitions.Operation.newBuilder()
-        .setType(type)
-        .setUserId(op.getAccount())
-        .build();
-        
-        this.crossServerStubs = refreshStubs();
-        for(String neighbour : neighbours){
-            DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService(neighbour);
-            distLedgerCrossServerService.propagateState(operation);
-        }
-        ledger.add(op);
-        accounts.remove(userId);
-        return 0;
-    }
-
     public Integer transferTo(String from, String dest, Integer amount) {
         if(!isServerActive) return -1;
         else if(!this.isPrimaryServer) return -6;
@@ -162,16 +140,22 @@ public class ServerState {
             CreateOp createOp = new CreateOp(op.getUserId());
             ledger.add(createOp);
             accounts.put(createOp.getAccount(), 0);
-        } else if(op.getType() == DistLedgerCommonDefinitions.OperationType.OP_DELETE_ACCOUNT){
-            DeleteOp deleteOp = new DeleteOp(op.getUserId());
-            ledger.add(deleteOp);
-            accounts.remove(deleteOp.getAccount());
         } else if(op.getType() == DistLedgerCommonDefinitions.OperationType.OP_TRANSFER_TO){
             TransferOp transferOp = new TransferOp(op.getUserId(), op.getDestUserId(), op.getAmount());
             ledger.add(transferOp);
             accounts.put(transferOp.getAccount(), accounts.get(transferOp.getAccount()) - transferOp.getAmount());
             accounts.put(transferOp.getDestAccount(), accounts.get(transferOp.getDestAccount()) + transferOp.getAmount());
         }
+    }
+
+    public Integer updateServerState(LedgerState ledgerState){
+        if(ledgerState.getLedgerCount() <= ledger.size()){ // TODO: verify if its < or <= and if its even compared by the size
+            return -1;
+        }
+        for(int i = ledger.size(); i < ledgerState.getLedgerCount(); i++){
+            receiveOperation(ledgerState.getLedger(i));
+        }
+        return 0;
     }
 
 

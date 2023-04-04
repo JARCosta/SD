@@ -77,43 +77,6 @@ public class UserServiceImpl extends UserServiceImplBase{
 
     }
 
-    @Override
-    public synchronized void deleteAccount(DeleteAccountRequest request,
-                                           StreamObserver<DeleteAccountResponse> responseObserver) {
-        Debug.debug("Received delete account request for " + request.getUserId() + ".");
-
-        int res = ledger.deleteAccount(request.getUserId());
-        switch (res) {
-            case 0:
-                DeleteAccountResponse response = DeleteAccountResponse.newBuilder().build();
-                Debug.debug("Sending response.");
-                responseObserver.onNext(response);
-                responseObserver.onCompleted();
-                Debug.debug("Request handled.");
-                break;
-            case -1:
-                responseObserver.onError(
-                        new Exception(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException()));
-            case -2:
-                responseObserver.onError(
-                        new Exception(NOT_FOUND.withDescription("User not found").asRuntimeException()));
-                break;
-            case -3:
-                responseObserver.onError(
-                        new Exception(INVALID_ARGUMENT.withDescription("Balance must be 0").asRuntimeException()));
-                break;
-            case -4:
-                responseObserver.onError(
-                    new Exception(NOT_FOUND.withDescription("B UNAVAILABLE").asRuntimeException()));
-                break;
-        
-            default:
-                responseObserver.onError(
-                        new Exception(UNKNOWN.withDescription("Failed to delete account").asRuntimeException()));
-                break;
-        }
-        
-    }
 
     @Override
     public synchronized void transferTo(TransferToRequest request,

@@ -35,19 +35,6 @@ public class UserService {
         }
     }
 
-    public void deleteAccount(String username) {
-        try{
-            DeleteAccountResponse result = stub.deleteAccount(DeleteAccountRequest.newBuilder()
-                    .setUserId(username)
-                    .build());
-            System.out.println(result == null ? "null" : "OK");
-        }
-        catch (StatusRuntimeException e){
-            System.out.println(e.getStatus().getDescription());
-        }
-    }
-
-
     public void balance(String username) {
         try{
             BalanceResponse result = stub.balance(BalanceRequest.newBuilder()
