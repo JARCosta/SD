@@ -22,10 +22,10 @@ public class DistLedgerCrossServerService {
         stub = DistLedgerCrossServerServiceGrpc.newBlockingStub(channel);
     }
 
-    public void propagateState(DistLedgerCommonDefinitions.Operation op){
+    public void propagateState(DistLedgerCommonDefinitions.LedgerState LedgerState){
         try{
             PropagateStateResponse result = stub.propagateState(PropagateStateRequest.newBuilder()
-                    .setOperation(op)
+                    .setState(LedgerState)
                     .build());
             System.out.println(result == null ? "null" : "OK");
         }

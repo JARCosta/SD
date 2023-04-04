@@ -5,6 +5,7 @@ import pt.tecnico.distledger.server.grpc.DistLedgerCrossServerService;
 import pt.tecnico.distledger.server.grpc.NamingServerService;
 import pt.ulisboa.tecnico.distledger.contract.DistLedgerCommonDefinitions;
 import pt.ulisboa.tecnico.distledger.contract.DistLedgerCommonDefinitions.LedgerState;
+import pt.ulisboa.tecnico.distledger.contract.admin.AdminDistLedger.getLedgerStateRequest;
 import pt.ulisboa.tecnico.distledger.contract.distledgerserver.DistLedgerCrossServerServiceGrpc;
 import pt.ulisboa.tecnico.distledger.contract.distledgerserver.DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub;
 
@@ -95,7 +96,7 @@ public class ServerState {
         this.crossServerStubs = refreshStubs();
         for(String neighbour : neighbours){
             DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService(neighbour);
-            distLedgerCrossServerService.propagateState(operation);
+            distLedgerCrossServerService.propagateState(getLedgerState());
         }
         ledger.add(op);
         accounts.put(userId, 0);
@@ -126,7 +127,7 @@ public class ServerState {
         this.crossServerStubs = refreshStubs();
         for(String neighbour : neighbours){
             DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService(neighbour);
-            distLedgerCrossServerService.propagateState(operation);
+            distLedgerCrossServerService.propagateState(getLedgerState());
         }
         ledger.add(op);
         accounts.put(from, accounts.get(from) - amount);
@@ -158,6 +159,30 @@ public class ServerState {
         return 0;
     }
 
+    public LedgerState getLedgerState(){
+        DistLedgerCommonDefinitions.LedgerState.Builder ledgerState = DistLedgerCommonDefinitions.LedgerState.newBuilder();
+        for(Operation op : ledger){
+            ledgerState.addLedger(operationToDistOperation(op));
+        }
+        return ledgerState.build();
+    }
+
+    public DistLedgerCommonDefinitions.Operation operationToDistOperation(Operation op){
+        if(op instanceof CreateOp){
+            return DistLedgerCommonDefinitions.Operation.newBuilder()
+            .setType(DistLedgerCommonDefinitions.OperationType.OP_CREATE_ACCOUNT)
+            .setUserId(op.getAccount())
+            .build();
+        } else if(op instanceof TransferOp){
+            return DistLedgerCommonDefinitions.Operation.newBuilder()
+            .setType(DistLedgerCommonDefinitions.OperationType.OP_TRANSFER_TO)
+            .setUserId(op.getAccount())
+            .setDestUserId(((TransferOp) op).getDestAccount())
+            .setAmount(((TransferOp) op).getAmount())
+            .build();
+        }
+        return null;
+    }
 
     @Override
     public String toString() {
