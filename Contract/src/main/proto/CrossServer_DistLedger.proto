@@ -6,11 +6,12 @@ import "DistLedgerCommonDefinitions.proto";
 // Cross-server interface of the DistLedger Service (only for phases 2 & 3 of the project)
 
 message PropagateStateRequest {
-  Operation operation = 1;
+  LedgerState state = 1;
   repeated int32 replicaTS = 2;
 }
 
-message PropagateStateResponse {}
+message PropagateStateResponse {
+}
 
 service DistLedgerCrossServerService {
   rpc propagateState(PropagateStateRequest) returns (PropagateStateResponse);
