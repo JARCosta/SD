@@ -17,7 +17,6 @@ public class ServerState {
     private List<Operation> ledger = new ArrayList<>();
     private Map<String, Integer> accounts = new HashMap<>();
     public boolean isServerActive;
-    public boolean isPrimaryServer;
     public NamingServerService namingServerService;
     private String serviceName;
     private String qualifier;
@@ -27,17 +26,9 @@ public class ServerState {
         this.ledger = new ArrayList<>();
         accounts.put("broker", 1000);
         this.isServerActive = true;
-        this.isPrimaryServer = true;
         this.namingServerService = namingServerService;
         this.serviceName = serviceName;
         this.qualifier = qualifier;
-    }
-
-    public ServerState() {
-        this.ledger = new ArrayList<>();
-        accounts.put("broker", 1000);
-        this.isServerActive = true;
-        this.isPrimaryServer = false;
     }
 
     private List<String> updateNeighbours() {
@@ -71,7 +62,6 @@ public class ServerState {
 
     public Integer createAccount(String userId) {
         if(!isServerActive) return -1;
-        else if(!this.isPrimaryServer) return -3;
         else if(accountExists(userId)) return -2;
         CreateOp op = new CreateOp(userId);
                 
@@ -87,7 +77,6 @@ public class ServerState {
 
     public Integer transferTo(String from, String dest, Integer amount) {
         if(!isServerActive) return -1;
-        else if(!this.isPrimaryServer) return -6;
         else if(!(accountExists(from) && accountExists(dest))) return -2;
         else if(from.equals(dest)) return -3;
         else if(amount <= 0) return -4;
@@ -104,7 +93,6 @@ public class ServerState {
     
     public Integer gossip(){
         if(!isServerActive) return -1;
-        else if(!this.isPrimaryServer) return -2;
         this.neighbours = updateNeighbours();
         for(String neighbour : neighbours){
             System.out.println("propagating to " + neighbour);

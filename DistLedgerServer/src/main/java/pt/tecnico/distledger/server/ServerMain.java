@@ -1,11 +1,8 @@
 package pt.tecnico.distledger.server;
 
 import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
 
 import io.grpc.BindableService;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
@@ -14,7 +11,6 @@ import pt.tecnico.distledger.server.domain.DistLedgerCrossServerServiceImpl;
 import pt.tecnico.distledger.server.domain.ServerState;
 import pt.tecnico.distledger.server.domain.UserServiceImpl;
 import pt.tecnico.distledger.server.grpc.NamingServerService;
-import pt.ulisboa.tecnico.distledger.contract.distledgerserver.DistLedgerCrossServerServiceGrpc;
 
 public class ServerMain {
 
@@ -36,13 +32,7 @@ public class ServerMain {
 		NamingServerService namingServerService = new NamingServerService();
 		namingServerService.register(serviceName, qualifier, address);
 
-		ServerState ledger;
-		// Create new server state
-		if (qualifier.equals("A")) {
-			ledger = new ServerState(namingServerService, serviceName, qualifier);
-		} else {
-			ledger = new ServerState();
-		}
+		ServerState ledger = new ServerState(namingServerService, serviceName, qualifier);
 
 		final BindableService userService = new UserServiceImpl(ledger);
 		final BindableService adminService = new AdminServiceImpl(ledger);
