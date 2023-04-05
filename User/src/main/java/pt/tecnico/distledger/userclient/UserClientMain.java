@@ -1,9 +1,5 @@
 package pt.tecnico.distledger.userclient;
 
-import pt.tecnico.distledger.userclient.grpc.UserService;
-import pt.tecnico.distledger.userclient.grpc.NamingServerService;
-
-import java.util.*;
 
 public class UserClientMain {
     

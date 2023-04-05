@@ -15,16 +15,8 @@ public class CommandParser {
     private static final String HELP = "help";
     private static final String EXIT = "exit";
 
-    private AdminService readAdminService;
-    private AdminService writeAdminService;
 
     public CommandParser() {
-        this.readAdminService = new AdminService(lookup("B").get(0));
-        this.writeAdminService = new AdminService(lookup("A").get(0));
-        if (readAdminService == null || writeAdminService == null ) {
-            Debug.debug("No servers with the name and/or qualifier");
-            System.exit(0);
-        }
     }
 
     public static List<String> lookup(String qualifier){
@@ -35,15 +27,20 @@ public class CommandParser {
 
         String serviceName = "DistLedgerServerService";
         List<String> servers = namingServerService.lookup(serviceName, qualifier);
-
+        namingServerService.shutdownNowChannel();
         return servers;
     }
 
-    public AdminService getUserService(String server){
-        if(server.equals("B"))
-            return readAdminService;
-        else 
-            return writeAdminService;
+    public AdminService getAdminService(String server){
+        for (String ip : lookup(server)) {
+            try{
+                AdminService userService = new AdminService(ip);
+                return userService;
+            }catch (Exception e){
+                System.err.println("Server not found");
+            }
+        }
+        return null;
     }
 
     void parseInput() {
@@ -87,10 +84,6 @@ public class CommandParser {
             }
 
         }
-        // A Channel should be shutdown before stopping the process.
-        readAdminService.shutdownNowChannel();
-        writeAdminService.shutdownNowChannel();
-
     }
 
     private void activate(String line){
@@ -103,12 +96,15 @@ public class CommandParser {
         String server = split[1];
 
         Debug.debug("Asking server '" + server + "' to activate...");
-        AdminService adminService = getUserService(server);
-        try{
-            adminService.activate();
-        }catch (Exception e){
-            adminService = new AdminService(lookup(server).get(0));
-            adminService.activate();
+        AdminService adminService = getAdminService(server);
+        while (true){
+            try{
+                adminService.activate();
+                adminService.shutdownNowChannel();
+                break;
+            } catch (Exception e){
+                adminService = getAdminService(server);
+            }
         }
         Debug.debug("Server completed the activate operation.");
     }
@@ -123,12 +119,15 @@ public class CommandParser {
         String server = split[1];
 
         Debug.debug("Asking server '" + server + "' to deactivate...");
-        AdminService adminService = getUserService(server);
-        try{
-            adminService.deactivate();
-        } catch (Exception e){
-            adminService = new AdminService(lookup(server).get(0));
-            adminService.deactivate();
+        AdminService adminService = getAdminService(server);
+        while (true){
+            try{
+                adminService.deactivate();
+                adminService.shutdownNowChannel();
+                break;
+            } catch (Exception e){
+                adminService = getAdminService(server);
+            }
         }
         Debug.debug("Server completed the deactivate operation.");
     }
@@ -143,21 +142,41 @@ public class CommandParser {
         String server = split[1];
 
         Debug.debug("Asking server '" + server + "' to get the server state...");
-        AdminService adminService = getUserService(server);
-        try{
-            adminService.getLedgerState();
-        } catch (Exception e){
-            adminService = new AdminService(lookup(server).get(0));
-            adminService.getLedgerState();
+        AdminService adminService = getAdminService(server);
+        while (true){
+            try{
+                adminService.getLedgerState();
+                adminService.shutdownNowChannel();
+                break;
+            } catch (Exception e){
+                adminService = getAdminService(server);
+            }
         }
         Debug.debug("Server completed the get server state operation.");
     }
 
     @SuppressWarnings("unused")
     private void gossip(String line){
-        /* TODO Phase-3 */
+        String[] split = line.split(SPACE);
+        if (split.length != 2){
+            this.printUsage();
+            return;
+        }
+        String server = split[1];
+
+        AdminService adminService = getAdminService(server);
+        while (true){
+            try{
+                adminService.gossip();
+                adminService.shutdownNowChannel();
+                break;
+            } catch (Exception e){
+                adminService = getAdminService(server);
+            }
+        }
         System.out.println("TODO: implement gossip command (only for Phase-3)");
     }
+
     private void printUsage() {
         System.out.println("Usage:\n" +
                 "- activate <server>\n" +

@@ -13,16 +13,7 @@ public class CommandParser {
     private static final String HELP = "help";
     private static final String EXIT = "exit";
 
-    private UserService readUserService;
-    private UserService writeUserService;
-
     public CommandParser() {
-        this.readUserService = new UserService(lookup("B").get(0));
-        this.writeUserService = new UserService(lookup("A").get(0));
-        if (readUserService == null || writeUserService == null ) {
-            Debug.debug("No servers with the name and/or qualifier");
-            System.exit(0);
-        }
     }
 
     public static List<String> lookup(String qualifier){
@@ -33,15 +24,20 @@ public class CommandParser {
 
         String serviceName = "DistLedgerServerService";
         List<String> servers = namingServerService.lookup(serviceName, qualifier);
-
+        namingServerService.shutdownNowChannel();
         return servers;
     }
 
     public UserService getUserService(String server){
-        if(server.equals("B"))
-            return readUserService;
-        else 
-            return writeUserService;
+        for (String ip : lookup(server)) {
+            try{
+                UserService userService = new UserService(ip);
+                return userService;
+            }catch (Exception e){
+                System.err.println("Server not found");
+            }
+        }
+        return null;
     }
 
     void parseInput() {
@@ -85,9 +81,6 @@ public class CommandParser {
                 System.err.println(e.getMessage());
             }
         }
-		// A Channel should be shutdown before stopping the process.
-        writeUserService.shutdownNowChannel();
-        readUserService.shutdownNowChannel();
     }
 
     private void createAccount(String line){
@@ -103,11 +96,14 @@ public class CommandParser {
         Debug.debug("Asking server '" + server +
                 "' to create account with username '" + username + "'...");
         UserService userService = getUserService(server);
-        try{
-            userService.createAccount(username);
-        }catch (Exception e){
-            userService = new UserService(lookup(server).get(0));
-            userService.createAccount(username);
+        while (true){
+            try{
+                userService.createAccount(username);
+                userService.shutdownNowChannel();
+                break;
+            }catch (Exception e){
+                userService = getUserService(server);
+            }
         }
         Debug.debug("Server completed the create account operation.");
     }
@@ -124,11 +120,14 @@ public class CommandParser {
 
         Debug.debug("Asking server '" + server + "' to see the balance of '" + username + "'...");
         UserService userService = getUserService(server);
-        try{
-            userService.balance(username);
-        } catch (Exception e){
-            userService = new UserService(lookup(server).get(0));
-            userService.balance(username);
+        while (true){
+            try{
+                userService.balance(username);
+                userService.shutdownNowChannel();
+                break;
+            }catch (Exception e){
+                userService = getUserService(server);
+            }
         }
         Debug.debug("Server completed the balance operation.");
     }
@@ -148,11 +147,14 @@ public class CommandParser {
         Debug.debug("Asking server '" + server + "' to transfer " + amount +
                 " from '" + from + "' to '" + dest + "...");
         UserService userService = getUserService(server);
-        try{
-            userService.transferTo(from, dest, amount);
-        }catch (Exception e){
-            userService = new UserService(lookup(server).get(0));
-            userService.transferTo(from, dest, amount);
+        while (true){
+            try{
+                userService.transferTo(from, dest, amount);
+                userService.shutdownNowChannel();
+                break;
+            }catch (Exception e){
+                userService = getUserService(server);
+            }
         }
         Debug.debug("Server completed the transfer to operation.");
     }
