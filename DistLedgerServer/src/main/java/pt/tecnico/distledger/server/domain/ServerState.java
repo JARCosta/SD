@@ -19,16 +19,14 @@ public class ServerState {
     public boolean isServerActive;
     public NamingServerService namingServerService;
     private String serviceName;
-    private String qualifier;
     private List<String> neighbours;
 
-    public ServerState(NamingServerService namingServerService, String serviceName, String qualifier) {
+    public ServerState(NamingServerService namingServerService, String serviceName) {
         this.ledger = new ArrayList<>();
         accounts.put("broker", 1000);
         this.isServerActive = true;
         this.namingServerService = namingServerService;
         this.serviceName = serviceName;
-        this.qualifier = qualifier;
     }
 
     private List<String> updateNeighbours() {

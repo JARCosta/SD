@@ -13,7 +13,6 @@ import pt.ulisboa.tecnico.distledger.contract.DistLedgerCommonDefinitions.Operat
 import pt.ulisboa.tecnico.distledger.contract.DistLedgerCommonDefinitions;
 import pt.ulisboa.tecnico.distledger.contract.admin.AdminDistLedger.*;*/
 
-import static io.grpc.Status.*;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
