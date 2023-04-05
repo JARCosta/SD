@@ -76,13 +76,7 @@ public class ServerState {
         CreateOp op = new CreateOp(userId);
                 
         ledger.add(op);
-
-        this.neighbours = updateNeighbours();
-        for(String neighbour : neighbours){
-            DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService(neighbour);
-            distLedgerCrossServerService.propagateState(getLedgerState());
-        }
-
+        gossip();
         accounts.put(userId, 0);
         return 0;
     }
@@ -101,16 +95,22 @@ public class ServerState {
         TransferOp op = new TransferOp(from, dest, amount);
         
         ledger.add(op);
+        gossip();
+        accounts.put(from, accounts.get(from) - amount);
+        accounts.put(dest, accounts.get(dest) + amount);
+        return 0;
+    }
 
+    
+    public Integer gossip(){
+        if(!isServerActive) return -1;
+        else if(!this.isPrimaryServer) return -2;
         this.neighbours = updateNeighbours();
         for(String neighbour : neighbours){
             System.out.println("propagating to " + neighbour);
             DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService(neighbour);
             distLedgerCrossServerService.propagateState(getLedgerState());
         }
-
-        accounts.put(from, accounts.get(from) - amount);
-        accounts.put(dest, accounts.get(dest) + amount);
         return 0;
     }
 

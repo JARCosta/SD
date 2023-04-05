@@ -55,5 +55,14 @@ public class AdminService {
         }
     }
 
+    public void gossip(){
+        try{
+            GossipResponse result =  stub.gossip(GossipRequest.newBuilder().build());
+            System.out.println(result == null ? "null" : "OK");
+        }
+        catch (StatusRuntimeException e){
+            System.out.println(e.getStatus().getDescription());
+        }
+    }
 
 }

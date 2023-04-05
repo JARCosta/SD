@@ -117,4 +117,30 @@ public class AdminServiceImpl extends AdminServiceImplBase{
                 break;
         }
     }
+
+    @Override
+    public synchronized void gossip(GossipRequest request, StreamObserver<GossipResponse> responseObserver) {
+        Debug.debug("Received gossip request.");
+
+        int res = ledger.gossip();
+        switch (res) {
+            case 0:
+                GossipResponse response = GossipResponse.newBuilder().build();
+
+                Debug.debug("Sending response.");
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+                Debug.debug("Request handled.");
+                break;
+            case -1:                        // TODO: review this all, its auto generated
+                responseObserver.onError(
+                        new Exception(CANCELLED.withDescription("Server already actived").asRuntimeException()));
+                break;
+        
+            default:
+                responseObserver.onError(
+                        new Exception(UNKNOWN.withDescription("Failed to activate").asRuntimeException()));
+                break;
+        }
+    }
 }
