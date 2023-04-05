@@ -1,20 +1,17 @@
 package pt.tecnico.distledger.server.domain;
 
+import pt.tecnico.distledger.server.Debug;
 import pt.tecnico.distledger.server.domain.operation.*;
 import pt.tecnico.distledger.server.grpc.DistLedgerCrossServerService;
 import pt.tecnico.distledger.server.grpc.NamingServerService;
 import pt.ulisboa.tecnico.distledger.contract.DistLedgerCommonDefinitions;
 import pt.ulisboa.tecnico.distledger.contract.DistLedgerCommonDefinitions.LedgerState;
-import pt.ulisboa.tecnico.distledger.contract.distledgerserver.DistLedgerCrossServerServiceGrpc;
-import pt.ulisboa.tecnico.distledger.contract.distledgerserver.DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
 
 public class ServerState {
     private List<Operation> ledger = new ArrayList<>();
@@ -24,10 +21,7 @@ public class ServerState {
     public NamingServerService namingServerService;
     private String serviceName;
     private String qualifier;
-    private List<DistLedgerCrossServerServiceBlockingStub> crossServerStubs = new ArrayList<>();
     private List<String> neighbours;
-
-    // Dictionary<String, Integer> accounts = new Hashtable<>();
 
     public ServerState(NamingServerService namingServerService, String serviceName, String qualifier) {
         this.ledger = new ArrayList<>();
@@ -46,16 +40,11 @@ public class ServerState {
         this.isPrimaryServer = false;
     }
 
-    private List<DistLedgerCrossServerServiceBlockingStub> refreshStubs() {
-        neighbours = namingServerService.lookup(serviceName, qualifier);
-        List<DistLedgerCrossServerServiceBlockingStub> crossServerStubs = new ArrayList<>();
-        for(String neighbour : neighbours){
-            ManagedChannel channel = ManagedChannelBuilder.forTarget(neighbour).usePlaintext().build();
-            DistLedgerCrossServerServiceBlockingStub stub;
-            stub = DistLedgerCrossServerServiceGrpc.newBlockingStub(channel);
-            crossServerStubs.add(stub);
-        }
-        return crossServerStubs;
+    private List<String> updateNeighbours() {
+        // TODO: lookup is currently returning this server ip as well
+        this.neighbours = namingServerService.lookup(this.serviceName, "");
+        Debug.debug("neighbours: " + this.neighbours);
+        return this.neighbours;
     }
 
     public Integer activate(String qualifier){
@@ -86,12 +75,14 @@ public class ServerState {
         else if(accountExists(userId)) return -2;
         CreateOp op = new CreateOp(userId);
                 
-        this.crossServerStubs = refreshStubs();
+        ledger.add(op);
+
+        this.neighbours = updateNeighbours();
         for(String neighbour : neighbours){
             DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService(neighbour);
             distLedgerCrossServerService.propagateState(getLedgerState());
         }
-        ledger.add(op);
+
         accounts.put(userId, 0);
         return 0;
     }
@@ -109,12 +100,15 @@ public class ServerState {
         else if(getBalance(from) < amount) return -5;
         TransferOp op = new TransferOp(from, dest, amount);
         
-        this.crossServerStubs = refreshStubs();
+        ledger.add(op);
+
+        this.neighbours = updateNeighbours();
         for(String neighbour : neighbours){
+            System.out.println("propagating to " + neighbour);
             DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService(neighbour);
             distLedgerCrossServerService.propagateState(getLedgerState());
         }
-        ledger.add(op);
+
         accounts.put(from, accounts.get(from) - amount);
         accounts.put(dest, accounts.get(dest) + amount);
         return 0;
