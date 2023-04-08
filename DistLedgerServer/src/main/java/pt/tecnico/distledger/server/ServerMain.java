@@ -39,7 +39,10 @@ public class ServerMain {
 		final BindableService distLedgerCrossServerServiceImpl = new DistLedgerCrossServerServiceImpl(ledger);
 
 		// Create a new server to listen on port
-		Server server = ServerBuilder.forPort(Integer.parseInt(port)).addService(userService).addService(adminService).addService(distLedgerCrossServerServiceImpl)
+		Server server = ServerBuilder.forPort(Integer.parseInt(port))
+				.addService(userService)
+				.addService(adminService)
+				.addService(distLedgerCrossServerServiceImpl)
 				.build();
 
 		server.start();

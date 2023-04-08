@@ -88,7 +88,7 @@ public class ServerState {
         return 0;
     }
 
-    
+    // gossip sends to all neighbours including itself
     public Integer gossip(){
         if(!isServerActive) return -1;
         this.neighbours = updateNeighbours();
