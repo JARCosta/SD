@@ -19,7 +19,7 @@ message CreateAccountRequest {
 }
 
 message CreateAccountResponse {
-    repeated int32 TS = 1;
+  repeated int32 TS = 1;
 }
 
 message TransferToRequest {
