@@ -134,7 +134,7 @@ public class AdminServiceImpl extends AdminServiceImplBase{
                 break;
             case -1:                        // TODO: review this all, its auto generated
                 responseObserver.onError(
-                        new Exception(CANCELLED.withDescription("Server already actived").asRuntimeException()));
+                        new Exception(CANCELLED.withDescription("Server not actived").asRuntimeException()));
                 break;
         
             default:

@@ -49,6 +49,7 @@ public class UserService {
             System.out.println(result == null ? "null" : "OK");
             if(result.getValue() > 0)
                 System.out.println(result.getValue());
+                return result.getValueTSList();
         }
         catch (StatusRuntimeException e){
             System.out.println(e.getStatus().getDescription());

@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.grpc.Status.*;
 
 public class ServerState {
     private List<Operation> ledger = new ArrayList<>();
@@ -19,7 +20,9 @@ public class ServerState {
     public boolean isServerActive;
     public NamingServerService namingServerService;
     private String serviceName;
-    private List<String> neighbours;
+    private List<Integer> valueTS;
+    private List<Integer> replicaTS;
+
 
     public ServerState(NamingServerService namingServerService, String serviceName) {
         this.ledger = new ArrayList<>();
@@ -27,13 +30,6 @@ public class ServerState {
         this.isServerActive = true;
         this.namingServerService = namingServerService;
         this.serviceName = serviceName;
-    }
-
-    private List<String> updateNeighbours() {
-        // TODO: lookup is currently returning this server ip as well
-        this.neighbours = namingServerService.lookup(this.serviceName, "");
-        Debug.debug("neighbours: " + this.neighbours);
-        return this.neighbours;
     }
 
     public Integer activate(String qualifier){
@@ -53,45 +49,50 @@ public class ServerState {
     }
 
     public Integer getBalance(String userId) {
-        if(!isServerActive) return -1;
-        else if(!accountExists(userId)) return -2;
+        if(!isServerActive) throw new RuntimeException(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException());
+        else if(!accountExists(userId)) throw new RuntimeException(NOT_FOUND.withDescription("User not found").asRuntimeException());        
+        //TODO: for each op that the server is behind, update the server ledger(add op to server)
+
+        // se n estiver up to date, ent gossip()
+        // if prevTS > valueTS
+        gossip();
         return accounts.get(userId);
     }
 
-    public Integer createAccount(String userId) {
-        if(!isServerActive) return -1;
-        else if(accountExists(userId)) return -2;
+    public List<Integer> createAccount(String userId, List<Integer> replicaTS) throws RuntimeException {
+        this.replicaTS = replicaTS;
+        if(!isServerActive) throw new RuntimeException(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException());
+        else if(accountExists(userId)) throw new RuntimeException(ALREADY_EXISTS.withDescription("User already exists").asRuntimeException());
         CreateOp op = new CreateOp(userId);
                 
         ledger.add(op);
-        gossip();
         accounts.put(userId, 0);
-        return 0;
+        return replicaTS;
     }
 
     public boolean accountExists(String userId) {
         return accounts.get(userId) != null;
     }
 
-    public Integer transferTo(String from, String dest, Integer amount) {
-        if(!isServerActive) return -1;
-        else if(!(accountExists(from) && accountExists(dest))) return -2;
-        else if(from.equals(dest)) return -3;
-        else if(amount <= 0) return -4;
-        else if(getBalance(from) < amount) return -5;
+    public List<Integer> transferTo(String from, String dest, Integer amount) {
+        if(!isServerActive) throw new RuntimeException(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException());
+        else if(!(accountExists(from) && accountExists(dest))) throw new RuntimeException(NOT_FOUND.withDescription("User not found").asRuntimeException());
+        else if(from.equals(dest)) throw new RuntimeException(INVALID_ARGUMENT.withDescription("Can't transfer to same account").asRuntimeException());
+        else if(amount <= 0) throw new RuntimeException(INVALID_ARGUMENT.withDescription("Invalid amount").asRuntimeException());
+        else if(getBalance(from) < amount) throw new RuntimeException(INVALID_ARGUMENT.withDescription("Not enough balance").asRuntimeException());
+        
         TransferOp op = new TransferOp(from, dest, amount);
         
         ledger.add(op);
-        gossip();
         accounts.put(from, accounts.get(from) - amount);
         accounts.put(dest, accounts.get(dest) + amount);
-        return 0;
+        return replicaTS;
     }
 
     // gossip sends to all neighbours including itself
     public Integer gossip(){
         if(!isServerActive) return -1;
-        this.neighbours = updateNeighbours();
+        List<String> neighbours = namingServerService.lookup(this.serviceName, "");
         for(String neighbour : neighbours){
             System.out.println("propagating to " + neighbour);
             DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService(neighbour);

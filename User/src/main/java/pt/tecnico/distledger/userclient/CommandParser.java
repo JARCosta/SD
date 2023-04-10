@@ -12,22 +12,13 @@ public class CommandParser {
     private static final String BALANCE = "balance";
     private static final String HELP = "help";
     private static final String EXIT = "exit";
-    private List<Integer> TS;
-
-    private int[] vectorClock= {0, 0};
-
-    public int[] getVectorClock() {
-        return vectorClock;
-    }
-
-    public void setVectorClock(int[] newVectorClock) {
-        vectorClock = newVectorClock;
-    }
+    
+    private List<Integer> verctorClock;
 
     public CommandParser() {
-        this.TS = new ArrayList<>();
-        TS.add(0);
-        TS.add(0);
+        this.verctorClock = new ArrayList<>(2);
+        verctorClock.add(0);
+        verctorClock.add(0);
     }
 
     public static List<String> lookup(String qualifier){
@@ -109,11 +100,11 @@ public class CommandParser {
 
         Debug.debug("Asking server '" + server +
                 "' to create account with username '" + username + "'...");
-        Debug.debug("User vetorClock: '" + getVectorClock()[0] + " " + getVectorClock()[1] + "'.");
+        Debug.debug("User vetorClock: '" + verctorClock.get(0) + " " + verctorClock.get(1) + "'.");
         UserService userService = getUserService(server);
         while (true){
             try{
-                TS = userService.createAccount(username, TS);
+                this.verctorClock = userService.createAccount(username, verctorClock);
                 userService.shutdownNowChannel();
                 break;
             }catch (Exception e){
@@ -137,7 +128,7 @@ public class CommandParser {
         UserService userService = getUserService(server);
         while (true){
             try{
-                userService.balance(username, TS);
+                userService.balance(username, verctorClock);
                 userService.shutdownNowChannel();
                 break;
             }catch (Exception e){
@@ -164,7 +155,7 @@ public class CommandParser {
         UserService userService = getUserService(server);
         while (true){
             try{
-                userService.transferTo(from, dest, amount, TS);
+                this.verctorClock = userService.transferTo(from, dest, amount, verctorClock);
                 userService.shutdownNowChannel();
                 break;
             }catch (Exception e){
