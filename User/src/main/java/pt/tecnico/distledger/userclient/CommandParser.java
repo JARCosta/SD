@@ -14,6 +14,16 @@ public class CommandParser {
     private static final String EXIT = "exit";
     private List<Integer> TS;
 
+    private int[] vectorClock= {0, 0};
+
+    public int[] getVectorClock() {
+        return vectorClock;
+    }
+
+    public void setVectorClock(int[] newVectorClock) {
+        vectorClock = newVectorClock;
+    }
+
     public CommandParser() {
         this.TS = new ArrayList<>();
         TS.add(0);
@@ -99,6 +109,7 @@ public class CommandParser {
 
         Debug.debug("Asking server '" + server +
                 "' to create account with username '" + username + "'...");
+        Debug.debug("User vetorClock: '" + getVectorClock()[0] + " " + getVectorClock()[1] + "'.");
         UserService userService = getUserService(server);
         while (true){
             try{
