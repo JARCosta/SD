@@ -12,8 +12,12 @@ public class CommandParser {
     private static final String BALANCE = "balance";
     private static final String HELP = "help";
     private static final String EXIT = "exit";
+    private List<Integer> TS;
 
     public CommandParser() {
+        this.TS = new ArrayList<>();
+        TS.add(0);
+        TS.add(0);
     }
 
     public static List<String> lookup(String qualifier){
@@ -98,7 +102,7 @@ public class CommandParser {
         UserService userService = getUserService(server);
         while (true){
             try{
-                userService.createAccount(username);
+                TS = userService.createAccount(username, TS);
                 userService.shutdownNowChannel();
                 break;
             }catch (Exception e){
@@ -122,7 +126,7 @@ public class CommandParser {
         UserService userService = getUserService(server);
         while (true){
             try{
-                userService.balance(username);
+                userService.balance(username, TS);
                 userService.shutdownNowChannel();
                 break;
             }catch (Exception e){
@@ -149,7 +153,7 @@ public class CommandParser {
         UserService userService = getUserService(server);
         while (true){
             try{
-                userService.transferTo(from, dest, amount);
+                userService.transferTo(from, dest, amount, TS);
                 userService.shutdownNowChannel();
                 break;
             }catch (Exception e){

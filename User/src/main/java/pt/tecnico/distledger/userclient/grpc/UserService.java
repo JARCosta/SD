@@ -1,5 +1,7 @@
 package pt.tecnico.distledger.userclient.grpc;
 
+import java.util.List;
+
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
@@ -23,22 +25,26 @@ public class UserService {
         channel.shutdownNow();
     }
 
-    public void createAccount(String username) {        
+    public List<Integer> createAccount(String username, List<Integer> TS) {        
         try{
             CreateAccountResponse result = stub.createAccount(CreateAccountRequest.newBuilder()
                     .setUserId(username)
+                    .addAllPrevTS(TS)
                     .build());
             System.out.println(result == null ? "null" : "OK");
+            return result.getTSList();
         }
         catch (StatusRuntimeException e){
             System.out.println(e.getStatus().getDescription());
         }
+        return TS;
     }
 
-    public void balance(String username) {
+    public List<Integer> balance(String username, List<Integer> TS) {
         try{
             BalanceResponse result = stub.balance(BalanceRequest.newBuilder()
                     .setUserId(username)
+                    .addAllPrevTS(TS)
                     .build());
             System.out.println(result == null ? "null" : "OK");
             if(result.getValue() > 0)
@@ -47,21 +53,25 @@ public class UserService {
         catch (StatusRuntimeException e){
             System.out.println(e.getStatus().getDescription());
         }
+        return TS;
     }
 
 
-    public void transferTo(String from, String dest, int amount) {
+    public List<Integer> transferTo(String from, String dest, int amount, List<Integer> TS) {
         try{
             TransferToResponse result = stub.transferTo(TransferToRequest.newBuilder()
                     .setAccountFrom(from)
                     .setAccountTo(dest)
                     .setAmount(amount)
+                    .addAllPrevTS(TS)
                     .build());
             System.out.println(result == null ? "null" : "OK");
+            return result.getTSList();
         }
         catch (StatusRuntimeException e){
             System.out.println(e.getStatus().getDescription());
         }
+        return TS;
     }
 
 }
