@@ -105,6 +105,7 @@ public class CommandParser {
         while (true){
             try{
                 this.verctorClock = userService.createAccount(username, verctorClock);
+                Debug.debug("Server returned: " + verctorClock);
                 userService.shutdownNowChannel();
                 break;
             }catch (Exception e){

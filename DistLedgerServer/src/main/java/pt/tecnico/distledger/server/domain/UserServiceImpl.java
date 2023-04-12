@@ -35,7 +35,7 @@ public class UserServiceImpl extends UserServiceImplBase{
     @Override
     public synchronized void createAccount(CreateAccountRequest request,
                                            StreamObserver<CreateAccountResponse> responseObserver) {
-        Debug.debug("Received create account request with name " + request.getUserId() + ".");
+        Debug.debug("Received create account request with name " + request.getUserId() + " and TS " + request.getPrevTSList() + ".");
 
         try {
                 List<Integer> TS = ledger.createAccount(request.getUserId(), request.getPrevTSList());

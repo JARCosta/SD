@@ -22,14 +22,22 @@ public class ServerState {
     private String serviceName;
     private List<Integer> valueTS;
     private List<Integer> replicaTS;
+    private String qualifier;
 
-
-    public ServerState(NamingServerService namingServerService, String serviceName) {
+    public ServerState(NamingServerService namingServerService, String serviceName, String qualifier) {
         this.ledger = new ArrayList<>();
         accounts.put("broker", 1000);
         this.isServerActive = true;
         this.namingServerService = namingServerService;
         this.serviceName = serviceName;
+
+        this.valueTS = new ArrayList<Integer>(2);
+        this.replicaTS = new ArrayList<Integer>(2);
+        this.valueTS.add(0);
+        this.valueTS.add(0);
+        this.replicaTS.add(0);
+        this.replicaTS.add(0);
+        this.qualifier = qualifier;
     }
 
     public Integer activate(String qualifier){
@@ -59,14 +67,44 @@ public class ServerState {
         return accounts.get(userId);
     }
 
-    public List<Integer> createAccount(String userId, List<Integer> replicaTS) throws RuntimeException {
-        this.replicaTS = replicaTS;
-        if(!isServerActive) throw new RuntimeException(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException());
-        else if(accountExists(userId)) throw new RuntimeException(ALREADY_EXISTS.withDescription("User already exists").asRuntimeException());
+    public List<Integer> createAccount(String userId, List<Integer> prevTS) throws RuntimeException {
+
+        if(!isServerActive)
+            throw new RuntimeException(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException());
+        else if(accountExists(userId))
+            throw new RuntimeException(ALREADY_EXISTS.withDescription("User already exists").asRuntimeException());
+
+        if(qualifier.equals("A")) {
+
+            Debug.debug("replicaTS = " + replicaTS);
+            replicaTS.set(0, replicaTS.get(0) + 1);
+            Debug.debug("replicaTS = " + replicaTS);
+
+        }
+        if(qualifier.equals("B")) {
+
+            Debug.debug("replicaTS = " + replicaTS);
+            replicaTS.set(1, replicaTS.get(1) + 1);
+            Debug.debug("replicaTS = " + replicaTS);
+
+        }
+
+        // TODO add TS to operation
         CreateOp op = new CreateOp(userId);
-                
         ledger.add(op);
-        accounts.put(userId, 0);
+
+        // if prevTS <= valueTS
+        Debug.debug("prevTS = " + prevTS);
+        Debug.debug("valueTS = " + valueTS);
+        if(prevTS.get(0) <= valueTS.get(0) && prevTS.get(1) <= valueTS.get(1)) {
+            // operacao executada
+            accounts.put(userId, 0);
+            // TODO set operation to stable
+            Debug.debug("Operation is stable");
+
+            valueTS = replicaTS;
+        }
+
         return replicaTS;
     }
 

@@ -32,7 +32,7 @@ public class ServerMain {
 		NamingServerService namingServerService = new NamingServerService();
 		namingServerService.register(serviceName, qualifier, address);
 
-		ServerState ledger = new ServerState(namingServerService, serviceName);
+		ServerState ledger = new ServerState(namingServerService, serviceName, qualifier);
 
 		final BindableService userService = new UserServiceImpl(ledger);
 		final BindableService adminService = new AdminServiceImpl(ledger);
