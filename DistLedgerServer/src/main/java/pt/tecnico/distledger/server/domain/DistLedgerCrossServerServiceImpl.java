@@ -17,7 +17,7 @@ public class DistLedgerCrossServerServiceImpl extends DistLedgerCrossServerServi
     public synchronized void propagateState(PropagateStateRequest request, StreamObserver<PropagateStateResponse> responseObserver) {
         System.out.println("Received PropagateStateRequest");
         
-        serverState.updateServerState(request.getState());
+        serverState.updateServerState(request.getState(), request.getReplicaTSList());
 
         PropagateStateResponse response = PropagateStateResponse.newBuilder().build();
         responseObserver.onNext(response);

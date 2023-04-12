@@ -25,11 +25,11 @@ public class UserService {
         channel.shutdownNow();
     }
 
-    public List<Integer> createAccount(String username, List<Integer> TS) {        
+    public List<Integer> createAccount(String username, List<Integer> prevTS) {        
         try{
             CreateAccountResponse result = stub.createAccount(CreateAccountRequest.newBuilder()
                     .setUserId(username)
-                    .addAllPrevTS(TS)
+                    .addAllPrevTS(prevTS)
                     .build());
             System.out.println(result == null ? "null" : "OK");
             return result.getTSList();
@@ -37,7 +37,7 @@ public class UserService {
         catch (StatusRuntimeException e){
             System.out.println(e.getStatus().getDescription());
         }
-        return TS;
+        return prevTS;
     }
 
     public List<Integer> balance(String username, List<Integer> TS) {

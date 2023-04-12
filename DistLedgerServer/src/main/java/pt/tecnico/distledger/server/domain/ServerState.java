@@ -56,15 +56,23 @@ public class ServerState {
         return ledger;
     }
 
-    public Integer getBalance(String userId) {
-        if(!isServerActive) throw new RuntimeException(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException());
-        else if(!accountExists(userId)) throw new RuntimeException(NOT_FOUND.withDescription("User not found").asRuntimeException());        
-        //TODO: for each op that the server is behind, update the server ledger(add op to server)
-
-        // se n estiver up to date, ent gossip()
-        // if prevTS > valueTS
-        gossip();
-        return accounts.get(userId);
+    public List<Integer> getBalance(String userId, List<Integer> prevTS) throws RuntimeException {
+        if(!isServerActive) 
+            throw new RuntimeException(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException());
+        else if(!accountExists(userId))
+            throw new RuntimeException(NOT_FOUND.withDescription("User not found").asRuntimeException());        
+        else if(!(prevTS.get(0) <= valueTS.get(0) && prevTS.get(1) <= valueTS.get(1)))
+            throw new RuntimeException(FAILED_PRECONDITION.withDescription("PREVTS is not stable").asRuntimeException());
+        // else if(!(prevTS.get(0) <= valueTS.get(0) && prevTS.get(1) <= valueTS.get(1))){
+        //     List<Integer> ret = valueTS;
+        //     ret.add(-1);
+        //     return ret;
+        // }
+        
+        List<Integer> ret = valueTS;
+        ret.add(accounts.get(userId));
+        
+        return ret;
     }
 
     public List<Integer> createAccount(String userId, List<Integer> prevTS) throws RuntimeException {
@@ -74,23 +82,13 @@ public class ServerState {
         else if(accountExists(userId))
             throw new RuntimeException(ALREADY_EXISTS.withDescription("User already exists").asRuntimeException());
 
-        if(qualifier.equals("A")) {
+        Debug.debug("replicaTS = " + replicaTS);
+        int index = (Character.getNumericValue(qualifier.charAt(0)) - Character.getNumericValue("A".charAt(0))); // turns "A" into 0, "B" into 1, etc
+        this.replicaTS.set(index, replicaTS.get(index) + 1); // increment servers's replicaTS
+        Debug.debug("replicaTS = " + replicaTS);
 
-            Debug.debug("replicaTS = " + replicaTS);
-            replicaTS.set(0, replicaTS.get(0) + 1);
-            Debug.debug("replicaTS = " + replicaTS);
-
-        }
-        if(qualifier.equals("B")) {
-
-            Debug.debug("replicaTS = " + replicaTS);
-            replicaTS.set(1, replicaTS.get(1) + 1);
-            Debug.debug("replicaTS = " + replicaTS);
-
-        }
-
-        // TODO add TS to operation
-        CreateOp op = new CreateOp(userId);
+        // TODO revirew if prevTS = this.valueTS and TS = this.replicaTS
+        CreateOp op = new CreateOp(userId, this.valueTS, this.replicaTS);
         ledger.add(op);
 
         // if prevTS <= valueTS
@@ -99,7 +97,7 @@ public class ServerState {
         if(prevTS.get(0) <= valueTS.get(0) && prevTS.get(1) <= valueTS.get(1)) {
             // operacao executada
             accounts.put(userId, 0);
-            // TODO set operation to stable
+            op.setStable();
             Debug.debug("Operation is stable");
 
             valueTS = replicaTS;
@@ -117,9 +115,9 @@ public class ServerState {
         else if(!(accountExists(from) && accountExists(dest))) throw new RuntimeException(NOT_FOUND.withDescription("User not found").asRuntimeException());
         else if(from.equals(dest)) throw new RuntimeException(INVALID_ARGUMENT.withDescription("Can't transfer to same account").asRuntimeException());
         else if(amount <= 0) throw new RuntimeException(INVALID_ARGUMENT.withDescription("Invalid amount").asRuntimeException());
-        else if(getBalance(from) < amount) throw new RuntimeException(INVALID_ARGUMENT.withDescription("Not enough balance").asRuntimeException());
+        else if(accounts.get(from) < amount) throw new RuntimeException(INVALID_ARGUMENT.withDescription("Not enough balance").asRuntimeException());
         
-        TransferOp op = new TransferOp(from, dest, amount);
+        TransferOp op = new TransferOp(from, dest, amount, this.valueTS, this.replicaTS);
         
         ledger.add(op);
         accounts.put(from, accounts.get(from) - amount);
@@ -134,31 +132,46 @@ public class ServerState {
         for(String neighbour : neighbours){
             System.out.println("propagating to " + neighbour);
             DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService(neighbour);
-            distLedgerCrossServerService.propagateState(getLedgerState());
+            distLedgerCrossServerService.propagateState(getLedgerState(), replicaTS);
         }
         return 0;
     }
 
 
     public void receiveOperation(DistLedgerCommonDefinitions.Operation op){
+        Integer index = Character.getNumericValue(qualifier.charAt(0)) - Character.getNumericValue("A".charAt(0));
+        
         if(op.getType() == DistLedgerCommonDefinitions.OperationType.OP_CREATE_ACCOUNT){
-            CreateOp createOp = new CreateOp(op.getUserId());
+            CreateOp createOp = new CreateOp(op.getUserId(), valueTS, replicaTS);
+            if(op.getPrevTS(index) <= this.valueTS.get(index)){
+                createOp.setStable();
+                // op é executada
+                accounts.put(createOp.getAccount(), 0);
+            }
             ledger.add(createOp);
-            accounts.put(createOp.getAccount(), 0);
         } else if(op.getType() == DistLedgerCommonDefinitions.OperationType.OP_TRANSFER_TO){
-            TransferOp transferOp = new TransferOp(op.getUserId(), op.getDestUserId(), op.getAmount());
+            TransferOp transferOp = new TransferOp(op.getUserId(), op.getDestUserId(), op.getAmount(), valueTS, replicaTS);
+            if(op.getPrevTS(index) <= this.valueTS.get(index)){
+                transferOp.setStable();
+                // op é executada
+                accounts.put(transferOp.getAccount(), accounts.get(transferOp.getAccount()) - transferOp.getAmount());
+                accounts.put(transferOp.getDestAccount(), accounts.get(transferOp.getDestAccount()) + transferOp.getAmount());
+            }
             ledger.add(transferOp);
-            accounts.put(transferOp.getAccount(), accounts.get(transferOp.getAccount()) - transferOp.getAmount());
-            accounts.put(transferOp.getDestAccount(), accounts.get(transferOp.getDestAccount()) + transferOp.getAmount());
         }
+
+        // TODO: 1. B.ValueTS = Merge(B.ValueTS, op.TS)
+
+        // TODO: 2. B.ReplicaTS = merge(B.ReplicaTS, A.ReplicaTS)
     }
 
-    public Integer updateServerState(LedgerState ledgerState){
-        if(ledgerState.getLedgerCount() <= ledger.size()){ // TODO: verify if its < or <= and if its even compared by the size
-            return -1;
-        }
-        for(int i = ledger.size(); i < ledgerState.getLedgerCount(); i++){
-            receiveOperation(ledgerState.getLedger(i));
+    public Integer updateServerState(LedgerState ledgerState, List<Integer> replicaTS){
+        Integer index = Character.getNumericValue(qualifier.charAt(0)) - Character.getNumericValue("A".charAt(0));
+
+        for (DistLedgerCommonDefinitions.Operation op : ledgerState.getLedgerList()) {
+            if(op.getTS(index) > replicaTS.get(index)){
+                receiveOperation(op);
+            }
         }
         return 0;
     }

@@ -5,6 +5,7 @@ import pt.tecnico.distledger.server.Debug;
 import pt.ulisboa.tecnico.distledger.contract.user.UserDistLedger.*;
 import pt.ulisboa.tecnico.distledger.contract.user.UserServiceGrpc.UserServiceImplBase;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserServiceImpl extends UserServiceImplBase{
@@ -19,10 +20,21 @@ public class UserServiceImpl extends UserServiceImplBase{
         Debug.debug("Received balance request for " + request.getUserId() + ".");
 
         try {
-            int res = ledger.getBalance(request.getUserId());
-            BalanceResponse response = BalanceResponse.newBuilder()
-                    .setValue(res)
-                    .build();
+            List<Integer> res = ledger.getBalance(request.getUserId(), request.getPrevTSList());
+            
+            Integer balance = res.get(res.size()-1);
+            res.remove(res.size()-1);
+            BalanceResponse response;
+            // if (balance != -1){
+                response = BalanceResponse.newBuilder()
+                        .setValue(balance)
+                        .addAllValueTS(res)
+                        .build();
+            // } else {
+            //     response = BalanceResponse.newBuilder()
+            //             .addAllValueTS(res)
+            //             .build();
+            // }
             Debug.debug("Sending response.");
             responseObserver.onNext(response);
             responseObserver.onCompleted();

@@ -1,11 +1,13 @@
 package pt.tecnico.distledger.server.domain.operation;
 
+import java.util.List;
+
 public class TransferOp extends Operation {
     private String destAccount;
     private int amount;
 
-    public TransferOp(String fromAccount, String destAccount, int amount) {
-        super(fromAccount);
+    public TransferOp(String fromAccount, String destAccount, int amount, List<Integer> prevTS, List<Integer> TS) {
+        super(fromAccount, prevTS, TS);
         this.destAccount = destAccount;
         this.amount = amount;
     }

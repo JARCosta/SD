@@ -1,5 +1,7 @@
 package pt.tecnico.distledger.server.grpc;
 
+import java.util.List;
+
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
@@ -22,10 +24,11 @@ public class DistLedgerCrossServerService {
         stub = DistLedgerCrossServerServiceGrpc.newBlockingStub(channel);
     }
 
-    public void propagateState(DistLedgerCommonDefinitions.LedgerState LedgerState){
+    public void propagateState(DistLedgerCommonDefinitions.LedgerState LedgerState, List<Integer> replicaTS){
         try{
             PropagateStateResponse result = stub.propagateState(PropagateStateRequest.newBuilder()
                     .setState(LedgerState)
+                    .addAllReplicaTS(replicaTS)
                     .build());
             System.out.println(result == null ? "null" : "OK");
         }
