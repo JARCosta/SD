@@ -26,5 +26,17 @@ public class Operation {
     public void setStable() {
         isStable = true;
     }
+
+    public List<Integer> getPrevTS() {
+        return prevTS;
+    }
+
+    public List<Integer> getTS() {
+        return TS;
+    }
+
+    public boolean isStable() {
+        return isStable;
+    }
     
 }

@@ -19,7 +19,6 @@ public class DistLedgerCrossServerService {
     private DistLedgerCrossServerServiceGrpc.DistLedgerCrossServerServiceBlockingStub stub;
 
     public DistLedgerCrossServerService(String target) {
-        /*fazer lookup do servidor B para obter localhost:2002*/
         channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
         stub = DistLedgerCrossServerServiceGrpc.newBlockingStub(channel);
     }

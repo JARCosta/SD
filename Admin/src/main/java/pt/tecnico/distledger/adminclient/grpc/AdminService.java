@@ -55,9 +55,9 @@ public class AdminService {
         }
     }
 
-    public void gossip(){
+    public void gossip(String target){
         try{
-            GossipResponse result =  stub.gossip(GossipRequest.newBuilder().build());
+            GossipResponse result =  stub.gossip(GossipRequest.newBuilder().setTarget(target).build());
             System.out.println(result == null ? "null" : "OK");
         }
         catch (StatusRuntimeException e){

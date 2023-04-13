@@ -122,7 +122,7 @@ public class AdminServiceImpl extends AdminServiceImplBase{
     public synchronized void gossip(GossipRequest request, StreamObserver<GossipResponse> responseObserver) {
         Debug.debug("Received gossip request.");
 
-        int res = ledger.gossip();
+        int res = ledger.gossip(request.getTarget());
         switch (res) {
             case 0:
                 GossipResponse response = GossipResponse.newBuilder().build();

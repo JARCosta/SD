@@ -68,7 +68,7 @@ public class UserServiceImpl extends UserServiceImplBase{
         Debug.debug("Received transfer request of " + request.getAmount()
                 + " from " + request.getAccountFrom() + " to " + request.getAccountTo() + ".");
         try {
-            List<Integer> TS = ledger.transferTo(request.getAccountFrom(), request.getAccountTo(), request.getAmount());
+            List<Integer> TS = ledger.transferTo(request.getAccountFrom(), request.getAccountTo(), request.getAmount(), request.getPrevTSList());
             TransferToResponse response = TransferToResponse.newBuilder().build();
             Debug.debug("Sending response.");
             responseObserver.onNext(response);

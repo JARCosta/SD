@@ -158,23 +158,20 @@ public class CommandParser {
     @SuppressWarnings("unused")
     private void gossip(String line){
         String[] split = line.split(SPACE);
-        if (split.length != 2){
+        if (split.length != 3){
             this.printUsage();
             return;
         }
         String server = split[1];
+        String server2 = split[2];
 
         AdminService adminService = getAdminService(server);
-        while (true){
-            try{
-                adminService.gossip();
-                adminService.shutdownNowChannel();
-                break;
-            } catch (Exception e){
-                adminService = getAdminService(server);
-            }
-        }
-        System.out.println("TODO: implement gossip command (only for Phase-3)");
+
+        adminService.gossip(server2);
+        
+        adminService.shutdownNowChannel();
+
+        Debug.debug("Server completed the gossip operation.");
     }
 
     private void printUsage() {
@@ -182,7 +179,7 @@ public class CommandParser {
                 "- activate <server>\n" +
                 "- deactivate <server>\n" +
                 "- getLedgerState <server>\n" +
-                "- gossip <server>\n" +
+                "- gossip <serverFrom> <serverTo>\n" +
                 "- exit\n");
     }
 

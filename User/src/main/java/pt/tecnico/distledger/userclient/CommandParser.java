@@ -102,20 +102,17 @@ public class CommandParser {
                 "' to create account with username '" + username + "'...");
         Debug.debug("User vetorClock: '" + verctorClock.get(0) + " " + verctorClock.get(1) + "'.");
         UserService userService = getUserService(server);
-        while (true){
-            try{
-                List<Integer> valueTS = userService.createAccount(username, verctorClock);
+        try{
+            List<Integer> valueTS = userService.createAccount(username, verctorClock);
 
-                for (int i = 0; i < this.verctorClock.size();i++){
-                    this.verctorClock.set(i, Math.max(this.verctorClock.get(i), valueTS.get(i)));
-                }
-
-                Debug.debug("Server returned: " + verctorClock);
-                userService.shutdownNowChannel();
-                break;
-            }catch (Exception e){
-                userService = getUserService(server);
+            for (int i = 0; i < this.verctorClock.size();i++){
+                this.verctorClock.set(i, Math.max(this.verctorClock.get(i), valueTS.get(i)));
             }
+
+            Debug.debug("Server returned: " + verctorClock);
+            userService.shutdownNowChannel();
+        }catch (Exception e){
+            userService = getUserService(server);
         }
         Debug.debug("Server completed the create account operation.");
     }
@@ -132,19 +129,16 @@ public class CommandParser {
 
         Debug.debug("Asking server '" + server + "' to see the balance of '" + username + "'...");
         UserService userService = getUserService(server);
-        while (true){
-            try{
-                List<Integer> valueTS = userService.balance(username, verctorClock);
+        try{
+            List<Integer> valueTS = userService.balance(username, verctorClock);
 
-                for (int i = 0; i < this.verctorClock.size();i++){
-                    this.verctorClock.set(i, Math.max(this.verctorClock.get(i), valueTS.get(i)));
-                }
-
-                userService.shutdownNowChannel();
-                break;
-            }catch (Exception e){
-                userService = getUserService(server);
+            for (int i = 0; i < this.verctorClock.size();i++){
+                this.verctorClock.set(i, Math.max(this.verctorClock.get(i), valueTS.get(i)));
             }
+
+            userService.shutdownNowChannel();
+        }catch (Exception e){
+            userService = getUserService(server);
         }
         Debug.debug("Server completed the balance operation.");
     }
@@ -164,19 +158,17 @@ public class CommandParser {
         Debug.debug("Asking server '" + server + "' to transfer " + amount +
                 " from '" + from + "' to '" + dest + "...");
         UserService userService = getUserService(server);
-        while (true){
-            try{
-                List<Integer> valueTS = userService.transferTo(from, dest, amount, verctorClock);
-                
-                for (int i = 0; i < this.verctorClock.size();i++){
-                    this.verctorClock.set(i, Math.max(this.verctorClock.get(i), valueTS.get(i)));
-                }
-
-                userService.shutdownNowChannel();
-                break;
-            }catch (Exception e){
-                userService = getUserService(server);
+        
+        try{
+            List<Integer> valueTS = userService.transferTo(from, dest, amount, verctorClock);
+            
+            for (int i = 0; i < this.verctorClock.size();i++){
+                this.verctorClock.set(i, Math.max(this.verctorClock.get(i), valueTS.get(i)));
             }
+
+            userService.shutdownNowChannel();
+        }catch (Exception e){
+            userService = getUserService(server);
         }
         Debug.debug("Server completed the transfer to operation.");
     }

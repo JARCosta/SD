@@ -17,7 +17,9 @@ message DeactivateRequest {
 
 message DeactivateResponse {}
 
-message GossipRequest {}
+message GossipRequest {
+  string target = 1;
+}
 
 message GossipResponse {}
 

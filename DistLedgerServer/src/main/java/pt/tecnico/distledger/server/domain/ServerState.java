@@ -56,7 +56,7 @@ public class ServerState {
         return ledger;
     }
 
-    public List<Integer> getBalance(String userId, List<Integer> prevTS) throws RuntimeException {
+    public List<Integer> getBalance(String userId, List<Integer> prevTS) {
         if(!isServerActive) 
             throw new RuntimeException(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException());
         else if(!accountExists(userId))
@@ -75,7 +75,7 @@ public class ServerState {
         return ret;
     }
 
-    public List<Integer> createAccount(String userId, List<Integer> prevTS) throws RuntimeException {
+    public List<Integer> createAccount(String userId, List<Integer> prevTS) {
 
         if(!isServerActive)
             throw new RuntimeException(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException());
@@ -110,30 +110,43 @@ public class ServerState {
         return accounts.get(userId) != null;
     }
 
-    public List<Integer> transferTo(String from, String dest, Integer amount) {
+    public List<Integer> transferTo(String from, String dest, Integer amount, List<Integer> prevTS) {
         if(!isServerActive) throw new RuntimeException(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException());
-        else if(!(accountExists(from) && accountExists(dest))) throw new RuntimeException(NOT_FOUND.withDescription("User not found").asRuntimeException());
-        else if(from.equals(dest)) throw new RuntimeException(INVALID_ARGUMENT.withDescription("Can't transfer to same account").asRuntimeException());
         else if(amount <= 0) throw new RuntimeException(INVALID_ARGUMENT.withDescription("Invalid amount").asRuntimeException());
-        else if(accounts.get(from) < amount) throw new RuntimeException(INVALID_ARGUMENT.withDescription("Not enough balance").asRuntimeException());
         
         TransferOp op = new TransferOp(from, dest, amount, this.valueTS, this.replicaTS);
         
+        // if prevTS <= valueTS
+        Debug.debug("prevTS = " + prevTS);
+        Debug.debug("valueTS = " + valueTS);
+        if(prevTS.get(0) <= valueTS.get(0) && prevTS.get(1) <= valueTS.get(1)) {
+            
+            if(!(accountExists(from) && accountExists(dest)))
+                throw new RuntimeException(NOT_FOUND.withDescription("User not found").asRuntimeException());
+            if(from.equals(dest))
+                throw new RuntimeException(INVALID_ARGUMENT.withDescription("Can't transfer to same account").asRuntimeException());
+            if(accounts.get(from) < amount)
+                throw new RuntimeException(INVALID_ARGUMENT.withDescription("Not enough balance").asRuntimeException());
+            accounts.put(from, accounts.get(from) - amount);
+            accounts.put(dest, accounts.get(dest) + amount);
+            op.setStable();
+            
+        }
         ledger.add(op);
-        accounts.put(from, accounts.get(from) - amount);
-        accounts.put(dest, accounts.get(dest) + amount);
+        
         return replicaTS;
     }
 
     // gossip sends to all neighbours including itself
-    public Integer gossip(){
+    public Integer gossip(String target){
         if(!isServerActive) return -1;
-        List<String> neighbours = namingServerService.lookup(this.serviceName, "");
-        for(String neighbour : neighbours){
-            System.out.println("propagating to " + neighbour);
-            DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService(neighbour);
-            distLedgerCrossServerService.propagateState(getLedgerState(), replicaTS);
-        }
+        String targetIp = namingServerService.lookup(this.serviceName, target).get(0);
+
+        DistLedgerCrossServerService distLedgerCrossServerService = new DistLedgerCrossServerService(targetIp);
+        // distLedgerCrossServerService
+        LedgerState temp = getLedgerState();
+        Debug.debug("propagating " + temp);
+        distLedgerCrossServerService.propagateState(temp, replicaTS);
         return 0;
     }
 
@@ -167,18 +180,25 @@ public class ServerState {
         Integer index = Character.getNumericValue(qualifier.charAt(0)) - Character.getNumericValue("A".charAt(0));
         
         for (DistLedgerCommonDefinitions.Operation op : ledgerState.getLedgerList()) {
-            if(op.getTS(index) > replicaTS.get(index)){
+            Debug.debug("["+ op.getTS(index) + " " + op.getTS(1-index)+"]");
+            Debug.debug("["+ this.replicaTS.get(index) + " " + this.replicaTS.get(1-index)+"]");
+            if(!(op.getTS(index) <= this.replicaTS.get(index) && op.getTS(1-index) <= this.replicaTS.get(1-index))){
                 receiveOperation(op);
             }
         }
         // TODO: 2. B.ReplicaTS = merge(B.ReplicaTS, A.ReplicaTS)
+        Debug.debug("replicaTS before merge = " + replicaTS);
         for (int i = 0; i < this.replicaTS.size();i++){
             this.replicaTS.set(i, Math.max(this.replicaTS.get(i), replicaTS.get(i)));
         }
+        Debug.debug("replicaTS after merge = " + replicaTS);
         
         this.replicaTS.set(index, replicaTS.get(index));
 
         for (DistLedgerCommonDefinitions.Operation op : ledgerState.getLedgerList()) {
+            Debug.debug("2nd for");
+            Debug.debug("opTS = " + op.getTS(index));
+            Debug.debug("replicaTS = " + replicaTS.get(index));
             if(op.getTS(index) > replicaTS.get(index)){
                 receiveOperation(op);
             }
@@ -200,6 +220,8 @@ public class ServerState {
             return DistLedgerCommonDefinitions.Operation.newBuilder()
             .setType(DistLedgerCommonDefinitions.OperationType.OP_CREATE_ACCOUNT)
             .setUserId(op.getAccount())
+            .addAllPrevTS(op.getPrevTS())
+            .addAllTS(op.getTS())
             .build();
         } else if(op instanceof TransferOp){
             return DistLedgerCommonDefinitions.Operation.newBuilder()
@@ -207,6 +229,8 @@ public class ServerState {
             .setUserId(op.getAccount())
             .setDestUserId(((TransferOp) op).getDestAccount())
             .setAmount(((TransferOp) op).getAmount())
+            .addAllPrevTS(op.getPrevTS())
+            .addAllTS(op.getTS())
             .build();
         }
         return null;
