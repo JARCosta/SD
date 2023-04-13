@@ -61,8 +61,10 @@ public class ServerState {
             throw new RuntimeException(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException());
         else if(!accountExists(userId))
             throw new RuntimeException(NOT_FOUND.withDescription("User not found").asRuntimeException());        
-        else if(!(prevTS.get(0) <= valueTS.get(0) && prevTS.get(1) <= valueTS.get(1)))
+        else if(!(prevTS.get(0) <= valueTS.get(0) && prevTS.get(1) <= valueTS.get(1))){
+            Debug.debug("!( [" + prevTS.get(0) + " " + prevTS.get(1) + "] <= [" + this.valueTS.get(0) + " " + this.valueTS.get(1) + "] )");
             throw new RuntimeException(FAILED_PRECONDITION.withDescription("PREVTS is not stable").asRuntimeException());
+        }
         // else if(!(prevTS.get(0) <= valueTS.get(0) && prevTS.get(1) <= valueTS.get(1))){
         //     List<Integer> ret = valueTS;
         //     ret.add(-1);
@@ -180,8 +182,7 @@ public class ServerState {
         Integer index = Character.getNumericValue(qualifier.charAt(0)) - Character.getNumericValue("A".charAt(0));
         
         for (DistLedgerCommonDefinitions.Operation op : ledgerState.getLedgerList()) {
-            Debug.debug("["+ op.getTS(index) + " " + op.getTS(1-index)+"]");
-            Debug.debug("["+ this.replicaTS.get(index) + " " + this.replicaTS.get(1-index)+"]");
+            Debug.debug("["+ op.getTS(index) + " " + op.getTS(1-index)+"] > ["+ this.replicaTS.get(index) + " " + this.replicaTS.get(1-index)+"]");
             if(!(op.getTS(index) <= this.replicaTS.get(index) && op.getTS(1-index) <= this.replicaTS.get(1-index))){
                 receiveOperation(op);
             }
@@ -195,11 +196,10 @@ public class ServerState {
         
         this.replicaTS.set(index, replicaTS.get(index));
 
+        Debug.debug("2nd for");
         for (DistLedgerCommonDefinitions.Operation op : ledgerState.getLedgerList()) {
-            Debug.debug("2nd for");
-            Debug.debug("opTS = " + op.getTS(index));
-            Debug.debug("replicaTS = " + replicaTS.get(index));
-            if(op.getTS(index) > replicaTS.get(index)){
+            Debug.debug("!( ["+ op.getTS(index) + " " + op.getTS(1-index)+"] > ["+ this.replicaTS.get(index) + " " + this.replicaTS.get(1-index)+"] )");
+            if(!(op.getTS(index) <= this.replicaTS.get(index) && op.getTS(1-index) <= this.replicaTS.get(1-index))){
                 receiveOperation(op);
             }
         }
