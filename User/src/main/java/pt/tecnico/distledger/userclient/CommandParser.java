@@ -104,7 +104,12 @@ public class CommandParser {
         UserService userService = getUserService(server);
         while (true){
             try{
-                this.verctorClock = userService.createAccount(username, verctorClock);
+                List<Integer> valueTS = userService.createAccount(username, verctorClock);
+
+                for (int i = 0; i < this.verctorClock.size();i++){
+                    this.verctorClock.set(i, Math.max(this.verctorClock.get(i), valueTS.get(i)));
+                }
+
                 Debug.debug("Server returned: " + verctorClock);
                 userService.shutdownNowChannel();
                 break;
@@ -129,7 +134,12 @@ public class CommandParser {
         UserService userService = getUserService(server);
         while (true){
             try{
-                userService.balance(username, verctorClock);
+                List<Integer> valueTS = userService.balance(username, verctorClock);
+
+                for (int i = 0; i < this.verctorClock.size();i++){
+                    this.verctorClock.set(i, Math.max(this.verctorClock.get(i), valueTS.get(i)));
+                }
+
                 userService.shutdownNowChannel();
                 break;
             }catch (Exception e){
@@ -156,7 +166,12 @@ public class CommandParser {
         UserService userService = getUserService(server);
         while (true){
             try{
-                this.verctorClock = userService.transferTo(from, dest, amount, verctorClock);
+                List<Integer> valueTS = userService.transferTo(from, dest, amount, verctorClock);
+                
+                for (int i = 0; i < this.verctorClock.size();i++){
+                    this.verctorClock.set(i, Math.max(this.verctorClock.get(i), valueTS.get(i)));
+                }
+
                 userService.shutdownNowChannel();
                 break;
             }catch (Exception e){

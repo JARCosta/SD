@@ -156,23 +156,34 @@ public class ServerState {
                 // op é executada
                 accounts.put(transferOp.getAccount(), accounts.get(transferOp.getAccount()) - transferOp.getAmount());
                 accounts.put(transferOp.getDestAccount(), accounts.get(transferOp.getDestAccount()) + transferOp.getAmount());
+                // TODO: 1. B.ValueTS = Merge(B.ValueTS, op.TS)
+                valueTS.set(index, op.getPrevTS(index));
             }
             ledger.add(transferOp);
         }
-
-        // TODO: 1. B.ValueTS = Merge(B.ValueTS, op.TS)
-
-        // TODO: 2. B.ReplicaTS = merge(B.ReplicaTS, A.ReplicaTS)
     }
-
+    
     public Integer updateServerState(LedgerState ledgerState, List<Integer> replicaTS){
         Integer index = Character.getNumericValue(qualifier.charAt(0)) - Character.getNumericValue("A".charAt(0));
+        
+        for (DistLedgerCommonDefinitions.Operation op : ledgerState.getLedgerList()) {
+            if(op.getTS(index) > replicaTS.get(index)){
+                receiveOperation(op);
+            }
+        }
+        // TODO: 2. B.ReplicaTS = merge(B.ReplicaTS, A.ReplicaTS)
+        for (int i = 0; i < this.replicaTS.size();i++){
+            this.replicaTS.set(i, Math.max(this.replicaTS.get(i), replicaTS.get(i)));
+        }
+        
+        this.replicaTS.set(index, replicaTS.get(index));
 
         for (DistLedgerCommonDefinitions.Operation op : ledgerState.getLedgerList()) {
             if(op.getTS(index) > replicaTS.get(index)){
                 receiveOperation(op);
             }
         }
+
         return 0;
     }
 
