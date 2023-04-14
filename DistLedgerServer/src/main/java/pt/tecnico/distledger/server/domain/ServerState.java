@@ -31,8 +31,8 @@ public class ServerState {
         this.namingServerService = namingServerService;
         this.serviceName = serviceName;
 
-        this.valueTS = new ArrayList<Integer>(2);
-        this.replicaTS = new ArrayList<Integer>(2);
+        this.valueTS = new ArrayList<Integer>(3);
+        this.replicaTS = new ArrayList<Integer>(3);
         this.valueTS.add(0);
         this.valueTS.add(0);
         this.replicaTS.add(0);
@@ -84,27 +84,26 @@ public class ServerState {
         else if(accountExists(userId))
             throw new RuntimeException(ALREADY_EXISTS.withDescription("User already exists").asRuntimeException());
 
-        Debug.debug("replicaTS = " + replicaTS);
         int index = (Character.getNumericValue(qualifier.charAt(0)) - Character.getNumericValue("A".charAt(0))); // turns "A" into 0, "B" into 1, etc
         this.replicaTS.set(index, replicaTS.get(index) + 1); // increment servers's replicaTS
         Debug.debug("replicaTS = " + replicaTS);
 
         // TODO revirew if prevTS = this.valueTS and TS = this.replicaTS
-        CreateOp op = new CreateOp(userId, this.valueTS, this.replicaTS);
+        CreateOp op = new CreateOp(userId, new ArrayList<Integer>(prevTS), new ArrayList<Integer>(this.replicaTS));
         ledger.add(op);
 
         // if prevTS <= valueTS
-        Debug.debug("prevTS = " + prevTS);
-        Debug.debug("valueTS = " + valueTS);
         if(prevTS.get(0) <= valueTS.get(0) && prevTS.get(1) <= valueTS.get(1)) {
             // operacao executada
             accounts.put(userId, 0);
             op.setStable();
             Debug.debug("Operation is stable");
-
-            valueTS = replicaTS;
+            
+            this.valueTS.set(index, op.getTS().get(index));
         }
-
+        Debug.debug("prevTS = " + prevTS);
+        Debug.debug("valueTS = " + valueTS);
+        
         return replicaTS;
     }
 
@@ -116,11 +115,14 @@ public class ServerState {
         if(!isServerActive) throw new RuntimeException(CANCELLED.withDescription("UNAVAILABLE").asRuntimeException());
         else if(amount <= 0) throw new RuntimeException(INVALID_ARGUMENT.withDescription("Invalid amount").asRuntimeException());
         
-        TransferOp op = new TransferOp(from, dest, amount, this.valueTS, this.replicaTS);
+        int index = (Character.getNumericValue(qualifier.charAt(0)) - Character.getNumericValue("A".charAt(0))); // turns "A" into 0, "B" into 1, etc
+        this.replicaTS.set(index, replicaTS.get(index) + 1); // increment servers's replicaTS
+        Debug.debug("replicaTS = " + replicaTS);
+
+        TransferOp op = new TransferOp(from, dest, amount, new ArrayList<Integer>(prevTS), new ArrayList<Integer>(this.replicaTS));
+        ledger.add(op);
         
         // if prevTS <= valueTS
-        Debug.debug("prevTS = " + prevTS);
-        Debug.debug("valueTS = " + valueTS);
         if(prevTS.get(0) <= valueTS.get(0) && prevTS.get(1) <= valueTS.get(1)) {
             
             if(!(accountExists(from) && accountExists(dest)))
@@ -129,12 +131,16 @@ public class ServerState {
                 throw new RuntimeException(INVALID_ARGUMENT.withDescription("Can't transfer to same account").asRuntimeException());
             if(accounts.get(from) < amount)
                 throw new RuntimeException(INVALID_ARGUMENT.withDescription("Not enough balance").asRuntimeException());
+            
             accounts.put(from, accounts.get(from) - amount);
             accounts.put(dest, accounts.get(dest) + amount);
             op.setStable();
-            
+            Debug.debug("Operation is stable");
+            this.valueTS.set(index, op.getTS().get(index));
         }
-        ledger.add(op);
+
+        Debug.debug("prevTS = " + prevTS);
+        Debug.debug("valueTS = " + valueTS);
         
         return replicaTS;
     }
@@ -157,53 +163,92 @@ public class ServerState {
         Integer index = Character.getNumericValue(qualifier.charAt(0)) - Character.getNumericValue("A".charAt(0));
         
         if(op.getType() == DistLedgerCommonDefinitions.OperationType.OP_CREATE_ACCOUNT){
-            CreateOp createOp = new CreateOp(op.getUserId(), valueTS, replicaTS);
-            if(op.getPrevTS(index) <= this.valueTS.get(index)){
-                createOp.setStable();
-                // op é executada
-                accounts.put(createOp.getAccount(), 0);
+            CreateOp createOp = new CreateOp(op.getUserId(), new ArrayList<Integer>(op.getPrevTSList()), new ArrayList<Integer>(op.getTSList()));
+            if(op.getTS(1-index) > this.replicaTS.get(1-index)){
+                ledger.add(createOp);
+                if(createOp.getPrevTS().get(1-index) <= this.valueTS.get(1-index)){
+                    // op é executada
+                    accounts.put(createOp.getAccount(), 0);
+                    
+                    createOp.setStable();
+                    Debug.debug("operation is stable, updating valueTS");
+                    
+                    // B.ValueTS = Merge(B.ValueTS, op.TS)
+                    valueTS.set(1-index, op.getTS(1-index));
+                }
             }
-            ledger.add(createOp);
         } else if(op.getType() == DistLedgerCommonDefinitions.OperationType.OP_TRANSFER_TO){
-            TransferOp transferOp = new TransferOp(op.getUserId(), op.getDestUserId(), op.getAmount(), valueTS, replicaTS);
-            if(op.getPrevTS(index) <= this.valueTS.get(index)){
-                transferOp.setStable();
-                // op é executada
-                accounts.put(transferOp.getAccount(), accounts.get(transferOp.getAccount()) - transferOp.getAmount());
-                accounts.put(transferOp.getDestAccount(), accounts.get(transferOp.getDestAccount()) + transferOp.getAmount());
-                // TODO: 1. B.ValueTS = Merge(B.ValueTS, op.TS)
-                valueTS.set(index, op.getPrevTS(index));
+            TransferOp transferOp = new TransferOp(op.getUserId(), op.getDestUserId(), op.getAmount(), new ArrayList<Integer>(op.getPrevTSList()), new ArrayList<Integer>(op.getTSList()));
+            if(op.getTS(1-index) > this.replicaTS.get(1-index)){
+                ledger.add(transferOp);
+                
+                if(transferOp.getPrevTS().get(1-index) <= this.valueTS.get(1-index)){
+                    // op é executada
+                    accounts.put(transferOp.getAccount(), accounts.get(transferOp.getAccount()) - transferOp.getAmount());
+                    accounts.put(transferOp.getDestAccount(), accounts.get(transferOp.getDestAccount()) + transferOp.getAmount());
+                    
+                    transferOp.setStable();
+                    Debug.debug("operation is stable, updating valueTS");
+                    
+                    // B.ValueTS = Merge(B.ValueTS, op.TS)
+                    valueTS.set(index, op.getTS(index));
+                }
             }
-            ledger.add(transferOp);
         }
+    }
+
+    public void execute(DistLedgerCommonDefinitions.Operation op){
+        Integer index = Character.getNumericValue(qualifier.charAt(0)) - Character.getNumericValue("A".charAt(0));
+
+        for(int i = 0; i < 3; i++){     // finds correct value for index
+            try{
+                if(op.getTS(i) - op.getPrevTS(i) > 0)
+                    index = i;
+            } catch (Exception e) {
+                continue;
+            }
+        }
+
+        if(op.getType() == DistLedgerCommonDefinitions.OperationType.OP_CREATE_ACCOUNT){
+            accounts.put(op.getUserId(), 0);
+        } else if(op.getType() == DistLedgerCommonDefinitions.OperationType.OP_TRANSFER_TO){
+            accounts.put(op.getUserId(), accounts.get(op.getUserId()) - op.getAmount());
+            accounts.put(op.getDestUserId(), accounts.get(op.getDestUserId()) + op.getAmount());
+        }
+        // B.ReplicaTS = merge(B.ReplicaTS, A.ReplicaTS)
+        valueTS.set(index, op.getTS(index));
     }
     
     public Integer updateServerState(LedgerState ledgerState, List<Integer> replicaTS){
         Integer index = Character.getNumericValue(qualifier.charAt(0)) - Character.getNumericValue("A".charAt(0));
         
         for (DistLedgerCommonDefinitions.Operation op : ledgerState.getLedgerList()) {
-            Debug.debug("["+ op.getTS(index) + " " + op.getTS(1-index)+"] > ["+ this.replicaTS.get(index) + " " + this.replicaTS.get(1-index)+"]");
+            Debug.debug("" + op.getTSList() + " " + this.replicaTS);
             if(!(op.getTS(index) <= this.replicaTS.get(index) && op.getTS(1-index) <= this.replicaTS.get(1-index))){
+                Debug.debug("receiving new operation\n" + op);
                 receiveOperation(op);
             }
+            Debug.debug("valueTS before merge = " + valueTS);
+            for (int i = 0; i < this.valueTS.size();i++){
+                this.valueTS.set(i, Math.max(this.valueTS.get(i), valueTS.get(i)));
+            }
+            Debug.debug("valueTS after merge = " + valueTS);
         }
-        // TODO: 2. B.ReplicaTS = merge(B.ReplicaTS, A.ReplicaTS)
-        Debug.debug("replicaTS before merge = " + replicaTS);
-        for (int i = 0; i < this.replicaTS.size();i++){
-            this.replicaTS.set(i, Math.max(this.replicaTS.get(i), replicaTS.get(i)));
-        }
-        Debug.debug("replicaTS after merge = " + replicaTS);
         
-        this.replicaTS.set(index, replicaTS.get(index));
-
         Debug.debug("2nd for");
-        for (DistLedgerCommonDefinitions.Operation op : ledgerState.getLedgerList()) {
-            Debug.debug("!( ["+ op.getTS(index) + " " + op.getTS(1-index)+"] > ["+ this.replicaTS.get(index) + " " + this.replicaTS.get(1-index)+"] )");
-            if(!(op.getTS(index) <= this.replicaTS.get(index) && op.getTS(1-index) <= this.replicaTS.get(1-index))){
-                receiveOperation(op);
+        
+        for (Operation op : this.ledger) {
+            if(!op.isStable()){
+                Debug.debug("" + op.getPrevTS() + " " + this.valueTS);
+                if(op.getPrevTS().get(index) <= this.valueTS.get(index) && op.getPrevTS().get(1-index) <= this.valueTS.get(1-index)){
+                    Debug.debug("executing\n" + op);
+                    op.setStable();
+                    execute(operationToDistOperation(op));
+                }
             }
         }
-
+        Debug.debug("valueTS = " + valueTS);
+        
         return 0;
     }
 

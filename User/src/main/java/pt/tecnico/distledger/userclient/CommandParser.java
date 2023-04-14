@@ -16,7 +16,7 @@ public class CommandParser {
     private List<Integer> verctorClock;
 
     public CommandParser() {
-        this.verctorClock = new ArrayList<>(2);
+        this.verctorClock = new ArrayList<>(3);
         verctorClock.add(0);
         verctorClock.add(0);
     }
