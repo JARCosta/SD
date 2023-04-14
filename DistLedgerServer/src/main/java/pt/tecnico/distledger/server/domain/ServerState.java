@@ -222,24 +222,35 @@ public class ServerState {
     public Integer updateServerState(LedgerState ledgerState, List<Integer> replicaTS){
         Integer index = Character.getNumericValue(qualifier.charAt(0)) - Character.getNumericValue("A".charAt(0));
         
+        Debug.debug("---------------------");
+        Debug.debug("-------1st loop------");
+        Debug.debug("---------------------");
+
         for (DistLedgerCommonDefinitions.Operation op : ledgerState.getLedgerList()) {
-            Debug.debug("" + op.getTSList() + " " + this.replicaTS);
-            if(!(op.getTS(index) <= this.replicaTS.get(index) && op.getTS(1-index) <= this.replicaTS.get(1-index))){
+
+            Debug.debug("" + op.getTSList() + " > " + this.replicaTS);
+            
+            if(op.getTS(index) > this.replicaTS.get(index) || op.getTS(1-index) > this.replicaTS.get(1-index)){
                 Debug.debug("receiving new operation\n" + op);
                 receiveOperation(op);
             }
-            Debug.debug("valueTS before merge = " + valueTS);
+
             for (int i = 0; i < this.valueTS.size();i++){
-                this.valueTS.set(i, Math.max(this.valueTS.get(i), valueTS.get(i)));
+                this.valueTS.set(i, Math.max(this.valueTS.get(i), op.getTS(i)));
             }
             Debug.debug("valueTS after merge = " + valueTS);
         }
         
-        Debug.debug("2nd for");
+        Debug.debug("---------------------");
+        Debug.debug("-------2nd loop------");
+        Debug.debug("---------------------");
+
+        Debug.debug("valueTS = " + this.valueTS);
+        Debug.debug("replicaTS = " + this.replicaTS);
         
         for (Operation op : this.ledger) {
             if(!op.isStable()){
-                Debug.debug("" + op.getPrevTS() + " " + this.valueTS);
+                Debug.debug("" + op.getPrevTS() + " <= " + this.valueTS);
                 if(op.getPrevTS().get(index) <= this.valueTS.get(index) && op.getPrevTS().get(1-index) <= this.valueTS.get(1-index)){
                     Debug.debug("executing\n" + op);
                     op.setStable();
@@ -247,8 +258,15 @@ public class ServerState {
                 }
             }
         }
+
+        for (int i = 0; i < this.replicaTS.size();i++){
+            this.replicaTS.set(i, Math.max(this.replicaTS.get(i), replicaTS.get(i)));
+        }
+        Debug.debug("replicaTS after merge = " + replicaTS);
+
         Debug.debug("valueTS = " + valueTS);
-        
+        Debug.debug("replicaTS = " + this.replicaTS);
+
         return 0;
     }
 
