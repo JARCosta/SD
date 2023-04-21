@@ -129,9 +129,9 @@
 				<artifactId>protobuf-maven-plugin</artifactId>
 				<version>${version.protobuf-maven-plugin}</version>
 				<configuration>
-					<protocArtifact>com.google.protobuf:protoc:${version.protoc}:exe:osx-x86_64</protocArtifact>
+					<protocArtifact>com.google.protobuf:protoc:${version.protoc}:exe:${os.detected.classifier}</protocArtifact>
 					<pluginId>grpc-java</pluginId>
-					<pluginArtifact>io.grpc:protoc-gen-grpc-java:${version.grpc}:exe:osx-x86_64</pluginArtifact>
+					<pluginArtifact>io.grpc:protoc-gen-grpc-java:${version.grpc}:exe:${os.detected.classifier}</pluginArtifact>
 					<!-- FOR MACS WITH ARM PROCESSORS COMMENT THE LINES ABOVE AND UNCOMMENT THE FOLLOWING
 					<protocArtifact>com.google.protobuf:protoc:${version.protoc}:exe:osx-x86_64</protocArtifact>
 					<pluginId>grpc-java</pluginId>
